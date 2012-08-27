@@ -18,10 +18,12 @@ INSTALL_OPTS=@INSTALL_OPTS@
 libexec_SCRIPTS=check_rhev3
 
 # compile
-all:
+check_rhev3:
+	sed '1,2d' check_rhev3.pl > check_rhev3.tmp
 	echo "#!@PERL@ -w" > $(libexec_SCRIPTS)
 	echo "# nagios: -epn" >> $(libexec_SCRIPTS)
-	cat check_rhev3.pl >> $(libexec_SCRIPTS)
+	cat check_rhev3.tmp >> $(libexec_SCRIPTS)
+	rm -f check_rhev3.tmp
 
 # install
 install:
