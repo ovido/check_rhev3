@@ -15,6 +15,12 @@
 PLUGIN_DIR=@srcdir@/plugin-dir
 CONTRIB_DIR=@srcdir@/contrib
 
+distdir=$(PACKAGE)-$(VERSION)
+DIST_COMMON=config.sub configure.in configure NEWS INSTALL missing aclocal.m4 TODO install-sh Makefile.am ChangeLog COPYING README AUTHORS Makefile.in config.guess
+PLUGIN_COMMON=$(PLUGIN_DIR)/Makefile.am $(PLUGIN_DIR)/Makefile.in $(PLUGIN_DIR)/check_rhev3.pl
+CONTRIB_COMMON=$(CONTRIB_DIR)/Makefile.am $(CONTRIB_DIR)/Makefile.in $(CONTRIB_DIR)/check_rhev3.php
+DISTFILES=$(DIST_COMMON) $(PLUGIN_COMMON) $(CONTRIB_COMMON)
+
 # compiler settings
 prefix=@prefix@
 INSTALL=@INSTALL@
