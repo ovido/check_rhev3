@@ -1,0 +1,12 @@
+#*********************************************************#
+#                                                         #
+#    Changelog of check_rhev3 plugin for Icinga/Nagios    #
+#                                                         #
+#*********************************************************#
+
+* 0.1.1 - Fri Aug 17 2012
+- Removed Nagios::Plugin dependency
+
+* 0.1.0 - Mon Aug 10 2012
+- This is the first public beta release of new plugin check_rhev3
+

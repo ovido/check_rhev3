@@ -1,0 +1,25 @@
+#*********************************************************#
+#                                                         #
+#     TODOs for check_rhev3 plugin for Icinga/Nagios      #
+#                                                         #
+#*********************************************************#
+
+* 1.2 (or newer)
+- Support for new features in RHEV 3.1 when released
+
+* 1.1 (or newer)
+- Merge functions check_cluster_status and vmpool_usage
+- Check for interface errors
+- Check disk I/O for VMs
+- Add option -n <nic> to check a specific nic instead of all
+- Add VM uptime check
+- Authentication to REST-API via authrc-file, too
+
+* 1.0
+- Provide MD5 hash
+- Create templates for PNP
+- Create configure script with autoconf for easier installation
+- Provide SPECs file for RHEL 6 and Fedora 17
+- Create signed RPM for RHEL 6 and publish key
+- Create labs.ovido.at with documentation Wiki
+- Provide example for Nagios/Icinga integration in README/Wiki
