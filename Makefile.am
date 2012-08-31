@@ -12,31 +12,35 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # directories
-PLUGIN_DIR=@srcdir@/plugin-dir
-CONTRIB_DIR=@srcdir@/contrib
+SRC_PLUGIN=@srcdir@/plugin-dir
+SRC_CONTRIB=@srcdir@/contrib
+
+PACKAGE=@PACKAGE@
+VERSION=@VERSION@
 
 distdir=$(PACKAGE)-$(VERSION)
 DIST_COMMON=config.sub configure.in configure NEWS INSTALL missing aclocal.m4 TODO install-sh Makefile.am ChangeLog COPYING README AUTHORS Makefile.in config.guess
-PLUGIN_COMMON=$(PLUGIN_DIR)/Makefile.am $(PLUGIN_DIR)/Makefile.in $(PLUGIN_DIR)/check_rhev3.pl
-CONTRIB_COMMON=$(CONTRIB_DIR)/Makefile.am $(CONTRIB_DIR)/Makefile.in $(CONTRIB_DIR)/check_rhev3.php
+PLUGIN_COMMON=$(SRC_PLUGIN)/Makefile.am $(SRC_PLUGIN)/Makefile.in $(SRC_PLUGIN)/check_rhev3.pl
+CONTRIB_COMMON=$(SRC_CONTRIB)/Makefile.am $(SRC_CONTRIB)/Makefile.in $(SRC_CONTRIB)/check_rhev3.php
 DISTFILES=$(DIST_COMMON) $(PLUGIN_COMMON) $(CONTRIB_COMMON)
 
 # compiler settings
 prefix=@prefix@
 INSTALL=@INSTALL@
+INSTALL_OPTS=@INSTALL_OPTS@
 
 # Compile
 all:
-	cd $(PLUGIN_DIR) && $(MAKE) $@
-	cd $(CONTRIB_DIR) && $(MAKE) $@
+	cd $(SRC_PLUGIN) && $(MAKE) $@
+	cd $(SRC_CONTRIB) && $(MAKE) $@
 
 # Install
 install:
-	cd $(PLUGIN_DIR) && $(MAKE) $@
-	cd $(CONTRIB_DIR) && $(MAKE) $@
+	cd $(SRC_PLUGIN) && $(MAKE) $@
+	cd $(SRC_CONTRIB) && $(MAKE) $@
 
 # Cleanup
 clean:
-	cd $(PLUGIN_DIR) && $(MAKE) $@
-	cd $(CONTRIB_DIR) && $(MAKE) $@
+	cd $(SRC_PLUGIN) && $(MAKE) $@
+	cd $(SRC_CONTRIB) && $(MAKE) $@
 
