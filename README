@@ -70,7 +70,7 @@ To be able to connect to RHEV-M via HTTPS on Fedora, you have to enable line 126
   $ra->ssl_opts(verify_hostname => 0);		# disable SSL cert verification
 
 For RHEL 6 install the following packages:
-# yum install perl-Crypt-SSLeay perl-libwww-perl perl-HTTP-Message perl-XML-Simple
+# yum install perl-Crypt-SSLeay perl-libwww-perl perl-XML-Simple
 
 For Debian Squeeze install the following packages:
 # apt-get install libwww-perl libcrypt-ssleay-perl libxml-simple-perl

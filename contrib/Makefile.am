@@ -22,5 +22,5 @@ all:
 
 # install
 install:
-	$(INSTALL) -m 755 $(INSTALL_OPTS) $(libexec_SCRIPTS) $(prefix)/templates/$(libexec_SCRIPTS)
+	$(INSTALL) -D -m 755 $(INSTALL_OPTS) $(libexec_SCRIPTS) $(DESTDIR)$(prefix)/templates/$(libexec_SCRIPTS)
 

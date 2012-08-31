@@ -10,7 +10,7 @@
 #  License: GPL - http://www.gnu.org/licenses         #
 #  Copyright: (c)2012 ovido gmbh                      #
 #  Author:  Rene Koch <r.koch@ovido.at>               #
-#  URL: https://oss.ovido.at/nagios-plugins           #
+#  URL: https://labs.ovido.at/monitoring              #
 #                                                     #
 #######################################################
 
@@ -34,10 +34,6 @@ use HTTP::Request;
 use HTTP::Request::Common qw(POST);
 use Getopt::Long;
 use XML::Simple;
-
-#use lib '/usr/lib/nagios/plugins';
-#use lib '/usr/lib64/nagios/plugins';
-#use utils qw(%ERRORS $TIMEOUT);
 
 # for debugging only
 use Data::Dumper;
