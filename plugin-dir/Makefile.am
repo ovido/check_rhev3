@@ -27,7 +27,7 @@ check_rhev3:
 
 # install
 install:
-	$(INSTALL) -m 755 $(INSTALL_OPTS) $(libexec_SCRIPTS) $(prefix)/$(libexec_SCRIPTS)
+	$(INSTALL) -D -m 755 $(INSTALL_OPTS) $(libexec_SCRIPTS) $(DESTDIR)$(prefix)/$(libexec_SCRIPTS)
 
 # cleanup
 clean:
