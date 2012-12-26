@@ -4,6 +4,10 @@
 #                                                         #
 #*********************************************************#
 
+* 1.0.1 - Thu Dec 27 2012
+- Scan for LWP::UserAgent version before establishing HTTPS
+  connection to RHEV Manager (Bug #1)
+
 * 1.0 - Fri Aug 31 2012
 - This is the first stable release of new plugin check_rhev3
 
