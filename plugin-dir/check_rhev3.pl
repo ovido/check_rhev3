@@ -5,7 +5,7 @@
 #                                                     #
 #  Name:    check_rhev3                               #
 #                                                     #
-#  Version: 0.1.1                                     #
+#  Version: 1.0.1                                     #
 #  Created: 2012-08-13                                #
 #  License: GPL - http://www.gnu.org/licenses         #
 #  Copyright: (c)2012 ovido gmbh                      #
@@ -52,7 +52,7 @@ my $perfdata	= 1;
 
 # Variables
 my $prog	= "check_rhev3";
-my $version	= "0.1.1";
+my $version	= "1.0.1";
 my $projecturl  = "https://labs.ovido.at/monitoring/wiki/check_rhev3";
 
 my $o_verbose	= undef;	# verbosity
@@ -1254,8 +1254,12 @@ sub rhev_connect{
   # connect to REST-API
   my $ra = LWP::UserAgent->new();
   $ra->timeout($rhevm_timeout);
-# not required on RHEL 6, but required on Fedora 16
-#  $ra->ssl_opts(verify_hostname => 0);		# disable SSL cert verification
+
+  # not required on RHEL 6, but required on Fedora 16
+  if (LWP::UserAgent->VERSION >= 6.0){
+    $ra->ssl_opts(verify_hostname => 0);		# disable SSL cert verification
+  }
+
   my $rr = HTTP::Request->new(GET => $rhevm_url);
   $rr->authorization_basic($rhevm_user,$rhevm_pwd);
   my $re = $ra->request($rr);
