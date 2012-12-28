@@ -1,6 +1,6 @@
 Name:		nagios-plugins-rhev3
-Version:	1.0
-Release:	2%{?dist}
+Version:	1.0.1
+Release:	1%{?dist}
 Summary:	RHEV monitoring plugin for Nagios/Icinga
 
 Group:		Applications/System
@@ -47,6 +47,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Dec 27 2012 Rene Koch <r.koch@ovido.at> 1.0.1-1
+- Initial build for bugfix release
+
 * Fri Aug 31 2012 Rene Koch <r.koch@ovido.at> 1.0-2
 - Removed BuildArch: noarch
 

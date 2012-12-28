@@ -66,9 +66,6 @@ For Fedora 16 install the following packages:
 # yum install perl-libwww-perl perl-LWP-Protocol-https perl-HTTP-Message \
               perl-XML-Simple
 
-To be able to connect to RHEV-M via HTTPS on Fedora, you have to enable line 1262:
-  $ra->ssl_opts(verify_hostname => 0);		# disable SSL cert verification
-
 For RHEL 6 install the following packages:
 # yum install perl-Crypt-SSLeay perl-libwww-perl perl-XML-Simple
 
