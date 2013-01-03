@@ -1129,8 +1129,10 @@ sub get_result{
   foreach my $key (keys %result){
   chop $xml;
     if (! $result{$xml}{$search} ){
-      # multiple results
+      # multiple results or RHEV 3.1 host nics
+      next if $key eq 'actions';	# RHEV 3.1 host nic found!
       my $retval;
+      # multiple results
       foreach my $value (keys %{ $result{$key} }){
 	print "$value: $result{$key}{$value}{$search}\n" if $o_verbose >= 2;
 	$return{$value} = $result{$key}{$value}{$search};
