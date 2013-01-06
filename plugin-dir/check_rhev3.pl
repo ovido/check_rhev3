@@ -131,8 +131,21 @@ sub parse_options(){
   # format must be username@domain:password
   if (defined( $o_auth )){
     my @auth = split(/:/, $o_auth);
-    if (! $auth[0]){	print_help();	}else{	$rhevm_user = $auth[0];	}
-    if (! $auth[1]){	print_help();	}else{	$rhevm_pwd = $auth[1];	}
+    if (! $auth[0]){ 
+     print "RHEV Username/Domain is missing.\n";
+     print_help();
+    }else{	$rhevm_user = $auth[0];	}
+    if (! $auth[1]){
+      print "RHEV Password is missing.\n";
+      print_help();
+    }else{	$rhevm_pwd = $auth[1];	}
+    my @tmp_auth = split(/@/, $auth[0]);
+    if (! $tmp_auth[0]){ 
+      print "RHEV Username is missing.\n";
+      print_help(); }
+    if (! $tmp_auth[1]){ 
+      print "RHEV Domain is missing.\n";
+      print_help(); }
   }else{
     # get auth from file .check_rhevrc
     print "Username, Password and Domain are missing.\n";
