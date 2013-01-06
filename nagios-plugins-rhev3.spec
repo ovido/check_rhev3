@@ -9,6 +9,10 @@ URL:		https://labs.ovido.at/monitoring
 Source0:	check_rhev3-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/check_rhev3-%{version}-%{release}-root
 
+BuildRequires:	perl-Crypt-SSLeay
+BuildRequires:	perl-libwww-perl
+BuildRequires:	perl-XML-Simple
+
 Requires:	perl-Crypt-SSLeay
 Requires:	perl-libwww-perl
 Requires:	perl-XML-Simple
