@@ -595,8 +595,15 @@ sub check_status {
   print "[D] check_status: Converted variable \$components: $components\n" if $o_verbose == 3;
   print "[D] check_status: Converted variable \$component: $component\n" if $o_verbose == 3;
   # REST-API call
-  # e.g. /api/datacenters?search=
-  my $rref = rhev_connect("/$components?search=$search");
+  # e.g. /api/datacenters?search=%3D
+  # or   /api/datacenters/
+  # call search path only if input is given
+  my $rref = undef;
+  if ($search eq ""){
+    $rref = rhev_connect("/$components/");
+  }else{
+    $rref = rhev_connect("/$components?search=name%3D$search");
+  }
   my %result = %{$rref};
   print "[D] check_status: \%result: " if $o_verbose == 3; print Dumper(%result) if $o_verbose == 3;
   
@@ -650,7 +657,10 @@ sub check_status {
         print "[D] check_status: Converting variable \$components.\n" if $o_verbose == 3;
         chop $components;
         print "[D] check_status: Converted variable \$components: $components\n" if $o_verbose == 3;
-        print_notfound(ucfirst($components), $search) unless $result{$component}{status}{state};
+        # storage domains with status active don't have <status><state>!
+        if ( (! defined $result{$component}{status}{state}) && (! defined $result{$component}{id}) ){ 
+          print_notfound(ucfirst($components), $search);
+        }
         print "[V] Status: Result: $result{$component}{status}{state}\n" if $o_verbose >= 2;
 	push @return, $result{$component}{status}{state};
       }
