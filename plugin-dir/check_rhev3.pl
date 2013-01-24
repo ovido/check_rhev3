@@ -1280,9 +1280,9 @@ sub rhev_connect{
   my $ra = LWP::UserAgent->new();
   $ra->timeout($rhevm_timeout);
 
-  # not required on RHEL 6, but required on Fedora 16
+  # disable SSL certificate verification
   if (LWP::UserAgent->VERSION >= 6.0){
-    $ra->ssl_opts(verify_hostname => 0);		# disable SSL cert verification
+    $ra->ssl_opts(verify_hostname => 0, SSL_verify_mode => 0x00);		# disable SSL cert verification
   }
 
   my $rr = HTTP::Request->new(GET => $rhevm_url);
