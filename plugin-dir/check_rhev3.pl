@@ -65,6 +65,7 @@ my $o_timeout	= undef;	# timeout
 my $o_warn;			# warning
 my $o_crit;			# critical
 my $o_auth	= undef;	# authentication
+my $o_authfile	= undef;	# authentication file
 my $o_rhev_dc	= undef;	# rhev data center
 my $o_rhev_cluster = undef;	# rhev cluster
 my $o_rhev_host	= undef;	# rhev host
@@ -95,6 +96,7 @@ sub parse_options(){
 	'V'	=> \$o_version,		'version'	=> \$o_version,
 	't:i'	=> \$o_timeout,		'timeout:i'	=> \$o_timeout,
 	'a:s'	=> \$o_auth,		'authorization:s' => \$o_auth,
+	'f:s'	=> \$o_authfile,	'authfile:s'	=> \$o_authfile,
 	'D:s'	=> \$o_rhev_dc,		'dc:s'		=> \$o_rhev_dc,
 	'C:s'	=> \$o_rhev_cluster,	'cluster:s'	=> \$o_rhev_cluster,
 	'R:s'	=> \$o_rhev_host,	'host:s'	=> \$o_rhev_host,
@@ -147,10 +149,41 @@ sub parse_options(){
       print "RHEV Domain is missing.\n";
       print_help(); }
   }else{
-    # get auth from file .check_rhevrc
-    print "Username, Password and Domain are missing.\n";
-    print_usage();
-    exit $ERRORS{$status{'unknown'}};
+    if (! defined $o_authfile){
+      print "Please provide credentials either via -a or -f option.\n";
+      print_help();
+    }
+    # get auth from file
+    open (AUTHFILE, $o_authfile) || die "Can't open auth file $o_authfile!\n";
+    while (<AUTHFILE>){
+      # remove white spaces
+      $_ =~ s/\s+//g;
+      chomp $_;
+      if ($_ =~ /^username=/){
+	my @tmp = split(/=/, $_);
+	my @tmp_auth = split(/@/, $tmp[1]);
+	if (! $tmp_auth[0]){
+	  print "RHEV Username is missing.\n";
+	  print_help();
+	}elsif (! $tmp_auth[1]){
+	  print "RHEV Domain ins missing.\n";
+	  print_help();
+	}
+	$rhevm_user = $tmp[1];
+      }elsif ($_ =~ /^password=/){
+	my @tmp = split(/=/, $_);
+        if (! $tmp[1]){
+	  print "RHEV Password is missing.\n";
+	  print_help();
+	}
+	$rhevm_pwd = $tmp[1];
+      }
+    }
+    close (AUTHFILE);
+    if (! $rhevm_user || ! $rhevm_pwd){
+      print "Error!\n";
+      exit 2;
+    }
   }
 }
 
@@ -162,7 +195,7 @@ sub parse_options(){
 #                                                   #
 #***************************************************#
 sub print_usage(){
-  print "Usage: $0 [-v] -H <hostname> [-p <port>] -a <auth> [-A <api>] [-t <timeout>] \n";
+  print "Usage: $0 [-v] -H <hostname> [-p <port>] -a <auth> | -f <authfile> [-A <api>] [-t <timeout>] \n";
   print "       -D <data center> | -C <cluster> | -R <rhev host> | -S <storage domain> -M <vm> | -P <vmpool> \n";
   print "       [-w <warn>] [-c <critical>] [-V] [-l <check>] [-s <subcheck>]\n"; 
 }
@@ -191,6 +224,10 @@ Options:
     port number (default: $rhevm_port)
  -a, --authorization=AUTH_PAIR
     Username\@domain:password required for login to REST-API
+ -f, --authfile=AUTH_FILE
+    Format of file:
+    username=Username\@Domain
+    password=Passowrd
  -A, --api
     REST-API path (default: $rhevm_api)
  -t, --timeout=INTEGER
