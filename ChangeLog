@@ -4,6 +4,18 @@
 #                                                         #
 #*********************************************************#
 
+* 1.1 - Wed Jan 30 2013
+- New features:
+-   Support of RHEV 3.1 and oVirt 3.2 (Ticket #2, #3, #4)
+-   Use same regex as in RHEV Manager search field (Ticket #4)
+-   Authentication via authrc file (Ticket #6)
+-
+- Bugs fixed:
+-    Storage domain search fixed for RHEV 3.1 (Ticket #3)
+-    Network traffic check fixed for RHEV 3.1 (Ticket #2)
+-    Adapt BuildRequires in nagios-plugins-rhev3.spec (Ticket #5)
+-    Fix LWP::UserAgent settings for Fedora 18 (Ticket #8)
+
 * 1.0.1 - Thu Dec 27 2012
 - Scan for LWP::UserAgent version before establishing HTTPS
   connection to RHEV Manager (Bug #1)
