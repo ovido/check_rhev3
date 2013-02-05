@@ -5,7 +5,7 @@
 #                                                     #
 #  Name:    check_rhev3                               #
 #                                                     #
-#  Version: 1.1                                       #
+#  Version: 1.1.1                                     #
 #  Created: 2012-08-13                                #
 #  License: GPL - http://www.gnu.org/licenses         #
 #  Copyright: (c)2012 ovido gmbh                      #
@@ -52,7 +52,7 @@ my $perfdata	= 1;
 
 # Variables
 my $prog	= "check_rhev3";
-my $version	= "1.1";
+my $version	= "1.1.1";
 my $projecturl  = "https://labs.ovido.at/monitoring/wiki/check_rhev3";
 
 my $o_verbose	= undef;	# verbosity
@@ -954,7 +954,7 @@ sub check_statistics{
         # loop through hash if stats are given
         foreach my $stat (keys %{ $rethash{ $key }{stats} }){
 	  $stat .= "_" . $key if $statistics eq "storage";
-	  $perf .= "$stat=$rethash{$key}{stats}{$stat};";
+	  $perf .= "$stat=$rethash{$key}{stats}{$stat};;;0; ";
         }
         print "[V] Statistics: Performance data: $perf.\n" if $o_verbose >= 2;
       }else{
