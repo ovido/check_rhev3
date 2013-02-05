@@ -5,7 +5,7 @@
 #                                                     #
 #  Name:    check_rhev3                               #
 #                                                     #
-#  Version: 1.1                                       #
+#  Version: 1.1.1                                     #
 #  Created: 2012-08-13                                #
 #  License: GPL - http://www.gnu.org/licenses         #
 #  Copyright: (c)2012 ovido gmbh                      #
@@ -52,7 +52,7 @@ my $perfdata	= 1;
 
 # Variables
 my $prog	= "check_rhev3";
-my $version	= "1.1";
+my $version	= "1.1.1";
 my $projecturl  = "https://labs.ovido.at/monitoring/wiki/check_rhev3";
 
 my $o_verbose	= undef;	# verbosity
