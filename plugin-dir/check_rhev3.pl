@@ -208,9 +208,9 @@ sub parse_options(){
 #                                                   #
 #***************************************************#
 sub print_usage(){
-  print "Usage: $0 [-v] -H <hostname> [-p <port>] -a <auth> | -f <authfile> [--ca-file <ca-file> [-A <api>] \n";
-  print "       [-t <timeout>] -D <data center> | -C <cluster> | -R <rhev host> | -S <storage domain> \n";
-  print "       -M <vm> | -P <vmpool> [-w <warn>] [-c <critical>] [-V] [-l <check>] [-s <subcheck>]\n"; 
+  print "Usage: $0 [-v] -H <hostname> [-p <port>] -a <auth> | -f <authfile> [--ca-file <ca-file> [-o ] \n";
+  print "       [-A <api>] [-t <timeout>] -D <data center> | -C <cluster> | -R <rhev host> | -S <storage domain> \n";
+  print "       | -M <vm> | -P <vmpool> [-w <warn>] [-c <critical>] [-V] [-l <check>] [-s <subcheck>]\n"; 
 }
 
 
@@ -222,7 +222,7 @@ sub print_usage(){
 #***************************************************#
 sub print_help(){
   print "\nRed Hat Enterprise Virtualization checks for Icinga/Nagios version $version\n";
-  print "GPL license, (c)2012 - Rene Koch <r.koch\@ovido.at>\n\n";
+  print "GPL license, (c)2012-2013	 - Rene Koch <r.koch\@ovido.at>\n\n";
   print_usage();
   print <<EOT;
 
@@ -243,6 +243,8 @@ Options:
     password=Passowrd
  --ca-file=CA_FILE
     Path to RHEV CA for SSL certificate verification
+ -o, --cookie
+    Use cookie based authenticated sessions (requires RHEV >= 3.1)
  -A, --api
     REST-API path (default: $rhevm_api)
  -t, --timeout=INTEGER
