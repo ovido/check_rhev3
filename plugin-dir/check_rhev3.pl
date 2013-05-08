@@ -32,6 +32,7 @@ use strict;
 use LWP::UserAgent;
 use HTTP::Request;
 use HTTP::Request::Common qw(POST);
+use HTTP::Headers;
 use Getopt::Long;
 use XML::Simple;
 
@@ -54,6 +55,7 @@ my $perfdata	= 1;
 my $prog	= "check_rhev3";
 my $version	= "1.2.0";
 my $projecturl  = "https://labs.ovido.at/monitoring/wiki/check_rhev3";
+my $cookie	= "/var/tmp";	# default path to cookie file
 
 my $o_verbose	= undef;	# verbosity
 my $o_help	= undef;	# help
@@ -67,6 +69,7 @@ my $o_crit;			# critical
 my $o_auth	= undef;	# authentication
 my $o_authfile	= undef;	# authentication file
 my $o_ca_file	= undef;	# certificate authority
+my $o_cookie	= undef;	# cookie authentication
 my $o_rhev_dc	= undef;	# rhev data center
 my $o_rhev_cluster = undef;	# rhev cluster
 my $o_rhev_host	= undef;	# rhev host
@@ -108,7 +111,8 @@ sub parse_options(){
 	's:s'	=> \$o_subcheck,	'subcheck:s'	=> \$o_subcheck,
 	'w:f'	=> \$o_warn,		'warning:f'	=> \$o_warn,
 	'c:f'	=> \$o_crit,		'critical:f'	=> \$o_crit,
-					'ca-file:s'	=> \$o_ca_file
+					'ca-file:s'	=> \$o_ca_file,
+	'o'	=> \$o_cookie,		'cookie'	=> \$o_cookie
   );
 
   # process options
@@ -1340,11 +1344,60 @@ sub rhev_connect{
   }
 
   my $rr = HTTP::Request->new(GET => $rhevm_url);
-  $rr->authorization_basic($rhevm_user,$rhevm_pwd);
+
+  # cookie authentication or basic auth
+  my $cf = `echo "$o_rhevm_host-$rhevm_user" | base64`;
+  chomp $cf;
+  print "[V] REST-API: cookie filename: $cf\n" if $o_verbose >= 2;
+  if (defined $o_cookie) {
+    print "[D] rhev_connect: Using cookie authentication.\n" if $o_verbose == 3;
+    $rr->header('Prefer' => 'persistent-auth');
+    # check if cookie file exists
+    if (-r $cookie . "/" . $cf){
+      my $jsessionid = `cat $cookie/$cf`;
+      chomp $jsessionid;
+      print "[D] rhev_connect: Using cookie: $jsessionid\n" if $o_verbose == 3;
+      $rr->header('cookie' => $jsessionid);
+    }else{
+      print "[D] rhev_connect: No cookie file found - using username and password\n" if $o_verbose == 3;
+      $rr->authorization_basic($rhevm_user,$rhevm_pwd);
+    }
+  }else{
+    print "[D] rhev_connect: Using username and password authentication.\n" if $o_verbose == 3;
+    $rr->authorization_basic($rhevm_user,$rhevm_pwd);
+  }
+
   my $re = $ra->request($rr);
-  if (! $re->is_success){	print "RHEV $status{'critical'}: Can't connect to RHEVM-API.\n"; exit $ERRORS{'CRITICAL'};	}
+  if (! $re->is_success){	
+    print "RHEV $status{'critical'}: Can't connect to RHEVM-API.\n"; 
+    if (-f $cookie . "/" . $cf){
+      print "[D] rhev_connect: Deleting file $cookie/$cf\n" if $o_verbose == 3;
+      unlink $cookie . "/" . $cf;
+    }
+    exit $ERRORS{'CRITICAL'};	
+  }
   print "[V] REST-API: " . $re->headers_as_string if $o_verbose >= 2;
   print "[D] rhev_connect: " . $re->content if $o_verbose >= 3;
+
+  # write cookie into file
+  if (defined $o_cookie){
+    # Set-Cookie is only available when connecting with username and password
+    if ($re->header('Set-Cookie')){
+      my @jsessionid = split/ /,$re->header('Set-Cookie');
+      chop $jsessionid[0];
+      print "[V] REST_API: jsessionid: $jsessionid[0]\n" if $o_verbose >= 2;
+      print "[D] rhev_connect: Creating new cookie file $cookie/$cf.\n" if $o_verbose == 3;
+      if (! open COOKIE, ">$cookie/$cf"){
+	print "RHEV $status{'critical'}: Can't open file $cookie/$cf for writing: $!\n";
+	exit $ERRORS{'CRITICAL'};
+      }else{
+	print COOKIE $jsessionid[0];
+	close COOKIE;
+	chmod (0600, $cookie . "/" . $cf);
+      }
+    }
+  }
+
   my $result = eval { XMLin($re->content) };
   print "RHEV $status{'critical'}: Error in XML returned from RHEVM - enable debug mode for details.\n" if $@;
   return $result;
