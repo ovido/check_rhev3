@@ -78,6 +78,7 @@ my $o_rhev_vm	= undef;	# rhev vm
 my $o_rhev_vmpool = undef;	# rhev vm pool
 my $o_check	= undef;
 my $o_subcheck	= undef;
+my @o_nics;
 
 my %status	= ( ok => "OK", warning => "WARNING", critical => "CRITICAL", unknown => "UNKNOWN");
 my %ERRORS	= ( "OK" => 0, "WARNING" => 1, "CRITICAL" => 2, "UNKNOWN" => 3);
@@ -112,7 +113,8 @@ sub parse_options(){
 	'w:f'	=> \$o_warn,		'warning:f'	=> \$o_warn,
 	'c:f'	=> \$o_crit,		'critical:f'	=> \$o_crit,
 					'ca-file:s'	=> \$o_ca_file,
-	'o'	=> \$o_cookie,		'cookie'	=> \$o_cookie
+	'o'	=> \$o_cookie,		'cookie'	=> \$o_cookie,
+	'n:s'	=> \@o_nics,		'nics:s'	=> \@o_nics
   );
 
   # process options
@@ -209,8 +211,9 @@ sub parse_options(){
 #***************************************************#
 sub print_usage(){
   print "Usage: $0 [-v] -H <hostname> [-p <port>] -a <auth> | -f <authfile> [--ca-file <ca-file> [-o ] \n";
-  print "       [-A <api>] [-t <timeout>] -D <data center> | -C <cluster> | -R <rhev host> | -S <storage domain> \n";
-  print "       | -M <vm> | -P <vmpool> [-w <warn>] [-c <critical>] [-V] [-l <check>] [-s <subcheck>]\n"; 
+  print "       [-A <api>] [-t <timeout>] -D <data center> | -C <cluster> | -R <rhev host> [-n <nic>] \n";
+  print "       | -S <storage domain> | -M <vm> | -P <vmpool> [-w <warn>] [-c <critical>] [-V] \n";
+  print "       [-l <check>] [-s <subcheck>]\n"; 
 }
 
 
@@ -266,6 +269,9 @@ Options:
     see $projecturl or README for details
  -s, --subcheck
     DC/Cluster/Hypervisor/VM/Storage Pool Subcheck
+    see $projecturl or README for details
+ -n, --nics
+    Specify host nic(s) to check
     see $projecturl or README for details
  -w, --warning=DOUBLE
     Value to result in warning status
@@ -785,6 +791,14 @@ sub check_istatus{
 	print "[D] check_istatus: Looping through second hash level.\n" if $o_verbose == 3;
 	foreach my $val (keys %{ $result{$value} }){
 	  next unless defined( $result{$value}{$val}{status}{state} );	# don't count virtual nics
+	  # only count specifed nics
+	  my $match = 0;
+	  if (scalar @o_nics > 0){
+	    for (my $n=0;$n<=$#o_nics;$n++){
+	      $match = 1 if $val =~ /$o_nics[$n]/;
+	    }
+	    next unless $match == 1;
+	  }
           $size++;
 	  $ok++ if $result{$value}{$val}{status}{state} eq "active";		# storagedomain
 	  $ok++ if $result{$value}{$val}{status}{state} eq "operational";	# network
@@ -794,6 +808,14 @@ sub check_istatus{
       }else{
         print "[V] Status: single hash entry found.\n" if $o_verbose >= 2;
 	next unless $result{$value}{status}{state};	# don't count virtual nics
+	# only count specifed nics
+	my $match = 0;
+	if (scalar @o_nics > 0){
+	  for (my $n=0;$n<=$#o_nics;$n++){
+	    $match = 1 if $result{$value}{name} =~ /$o_nics[$n]/;
+	  }
+	  next unless $match == 1;
+	}
         $size++;
 	$ok++ if $result{$value}{status}{state} eq "active";		# storagedomain
 	$ok++ if $result{$value}{status}{state} eq "operational";	# network
@@ -859,6 +881,9 @@ sub check_statistics{
   my %id = %{ $iref };
   print "[D] check_statistics: \%id: " if $o_verbose == 3; print Dumper(%id) if $o_verbose == 3;
 
+  my $status = "unknown";
+  my $output = undef;
+
   my %rethash;
   my $subcheck = "statistics"; 
      $subcheck = "nics" if $statistics eq "traffic";
@@ -878,11 +903,23 @@ sub check_statistics{
       my %nics = %{ $nref };
       print "[D] check_statistics: \%nics: " if $o_verbose == 3; print Dumper(%nics) if $o_verbose == 3;
       foreach my $nic (keys %nics){
+	# only count specifed nics
+	my $match = 0;
+	if (scalar @o_nics > 0){
+	  for (my $n=0;$n<=$#o_nics;$n++){
+	    $match = 1 if $nic =~ /$o_nics[$n]/;
+	  }
+	  next unless $match == 1;
+	}
 	print "[D] check_statistics: $nic: $nics{$nic}\n" if $o_verbose == 3;
         my $iret = get_stats($component,$id{ $key },"nics/$nics{$nic}/statistics",$statistics,$key);
         my %temp = %{ $iret };
         $rethash{$key}{$nic} = $temp{$key};
         print "[D] check_statistics: \%rethash: " if $o_verbose == 3; print Dumper(%rethash) if $o_verbose == 3;
+      }
+      if (! %rethash){
+	$output = "No nics found matching your search query!";
+	$status = 'critical';
       }
     }else{
       # check cpu, load and memory
@@ -909,8 +946,6 @@ sub check_statistics{
   print "[V] Statistics: warning value: $o_warn.\n" if $o_verbose >= 2;
   print "[V] Statistics: critical value: $o_crit.\n" if $o_verbose >= 2;
 
-  my $status = "unknown";
-  my $output = undef;
   my $perf   = "|";
   # use Bytes instead of Bites for performance data
   $o_warn = $o_warn / 8 if $statistics eq "traffic";
