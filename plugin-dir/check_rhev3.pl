@@ -5,7 +5,7 @@
 #                                                     #
 #  Name:    check_rhev3                               #
 #                                                     #
-#  Version: 1.1.1                                     #
+#  Version: 1.2.0                                     #
 #  Created: 2012-08-13                                #
 #  License: GPL - http://www.gnu.org/licenses         #
 #  Copyright: (c)2012 ovido gmbh                      #
@@ -52,7 +52,7 @@ my $perfdata	= 1;
 
 # Variables
 my $prog	= "check_rhev3";
-my $version	= "1.1.1";
+my $version	= "1.2.0";
 my $projecturl  = "https://labs.ovido.at/monitoring/wiki/check_rhev3";
 
 my $o_verbose	= undef;	# verbosity
@@ -66,6 +66,7 @@ my $o_warn;			# warning
 my $o_crit;			# critical
 my $o_auth	= undef;	# authentication
 my $o_authfile	= undef;	# authentication file
+my $o_ca_file	= undef;	# certificate authority
 my $o_rhev_dc	= undef;	# rhev data center
 my $o_rhev_cluster = undef;	# rhev cluster
 my $o_rhev_host	= undef;	# rhev host
@@ -106,7 +107,8 @@ sub parse_options(){
 	'l:s'	=> \$o_check,		'check:s'	=> \$o_check,
 	's:s'	=> \$o_subcheck,	'subcheck:s'	=> \$o_subcheck,
 	'w:f'	=> \$o_warn,		'warning:f'	=> \$o_warn,
-	'c:f'	=> \$o_crit,		'critical:f'	=> \$o_crit
+	'c:f'	=> \$o_crit,		'critical:f'	=> \$o_crit,
+					'ca-file:s'	=> \$o_ca_file
   );
 
   # process options
@@ -181,8 +183,15 @@ sub parse_options(){
     }
     close (AUTHFILE);
     if (! $rhevm_user || ! $rhevm_pwd){
-      print "Error!\n";
-      exit 2;
+      print "Error getting values from auth file!\n";
+      exit $ERRORS{$status{'unknown'}};
+    }
+  }
+
+  if (defined $o_ca_file){
+    if (! -r $o_ca_file){
+      print "Can't read Certificate Authority file: $o_ca_file!\n";
+      exit $ERRORS{$status{'unknown'}};
     }
   }
 }
@@ -195,9 +204,9 @@ sub parse_options(){
 #                                                   #
 #***************************************************#
 sub print_usage(){
-  print "Usage: $0 [-v] -H <hostname> [-p <port>] -a <auth> | -f <authfile> [-A <api>] [-t <timeout>] \n";
-  print "       -D <data center> | -C <cluster> | -R <rhev host> | -S <storage domain> -M <vm> | -P <vmpool> \n";
-  print "       [-w <warn>] [-c <critical>] [-V] [-l <check>] [-s <subcheck>]\n"; 
+  print "Usage: $0 [-v] -H <hostname> [-p <port>] -a <auth> | -f <authfile> [--ca-file <ca-file> [-A <api>] \n";
+  print "       [-t <timeout>] -D <data center> | -C <cluster> | -R <rhev host> | -S <storage domain> \n";
+  print "       -M <vm> | -P <vmpool> [-w <warn>] [-c <critical>] [-V] [-l <check>] [-s <subcheck>]\n"; 
 }
 
 
@@ -228,6 +237,8 @@ Options:
     Format of file:
     username=Username\@Domain
     password=Passowrd
+ --ca-file=CA_FILE
+    Path to RHEV CA for SSL certificate verification
  -A, --api
     REST-API path (default: $rhevm_api)
  -t, --timeout=INTEGER
@@ -1317,9 +1328,15 @@ sub rhev_connect{
   my $ra = LWP::UserAgent->new();
   $ra->timeout($rhevm_timeout);
 
-  # disable SSL certificate verification
-  if (LWP::UserAgent->VERSION >= 6.0){
-    $ra->ssl_opts(verify_hostname => 0, SSL_verify_mode => 0x00);		# disable SSL cert verification
+  # SSL certificate verification
+  if (defined $o_ca_file){
+    # check certificate
+    $ra->ssl_opts(verfiy_hostname => 1, SSL_ca_file => $o_ca_file);
+  }else{
+    # disable SSL certificate verification
+    if (LWP::UserAgent->VERSION >= 6.0){
+      $ra->ssl_opts(verify_hostname => 0, SSL_verify_mode => 0x00);		# disable SSL cert verification
+    }
   }
 
   my $rr = HTTP::Request->new(GET => $rhevm_url);
