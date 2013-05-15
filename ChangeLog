@@ -4,6 +4,15 @@
 #                                                         #
 #*********************************************************#
 
+* 1.2 - Thu Mai 16 2013
+- New features:
+-   Verify RHEV-M certificate (Ticket #23)
+-   Allow authentication sessions for authentication in RHEV >= 3.1 and oVirt >= 3.1 (Ticket #24)
+-   Use option -n <nic> to check a specific nic (Ticket #25)
+-
+- Bugs fixed:
+-   Performance data issue with check_multi (Ticket #9) 
+
 * 1.1 - Wed Jan 30 2013
 - New features:
 -   Support of RHEV 3.1 and oVirt 3.2 (Ticket #2, #3, #4)
