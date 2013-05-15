@@ -5,7 +5,7 @@ Summary:	RHEV monitoring plugin for Nagios/Icinga
 
 Group:		Applications/System
 License:	GPLv2+
-URL:		https://labs.ovido.at/monitoring
+URL:		https://github.com/ovido/check_rhev3
 Source0:	check_rhev3-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/check_rhev3-%{version}-%{release}-root
 
