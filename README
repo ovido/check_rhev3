@@ -79,7 +79,7 @@ Documentation
 Short documentation on how to use this plugin.
 
 Detailed documentation can be found on the project website
-https://labs.ovido.at/monitoring/wiki/check_rhev3.
+https://github.com/ovido/check_rhev3.
 
 The following checks can be performed by this plugin:
 
