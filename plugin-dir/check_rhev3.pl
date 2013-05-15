@@ -10,7 +10,7 @@
 #  License: GPL - http://www.gnu.org/licenses         #
 #  Copyright: (c)2012 ovido gmbh                      #
 #  Author:  Rene Koch <r.koch@ovido.at>               #
-#  URL: https://labs.ovido.at/monitoring              #
+#  URL: https://github.com/ovido/check_rhev3          #
 #                                                     #
 #######################################################
 
@@ -54,7 +54,7 @@ my $perfdata	= 1;
 # Variables
 my $prog	= "check_rhev3";
 my $version	= "1.2.0";
-my $projecturl  = "https://labs.ovido.at/monitoring/wiki/check_rhev3";
+my $projecturl  = "https://github.com/ovido/check_rhev3";
 my $cookie	= "/var/tmp";	# default path to cookie file
 
 my $o_verbose	= undef;	# verbosity
