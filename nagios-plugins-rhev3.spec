@@ -51,7 +51,7 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Tue Mai 16 2013 Rene Koch <r.koch@ovido.at> 1.2-1
+* Thu May 16 2013 Rene Koch <r.koch@ovido.at> 1.2-1
 - Initial build
 
 * Wed Jan 30 2013 Rene Koch <r.koch@ovido.at> 1.1-1
