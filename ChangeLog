@@ -4,7 +4,11 @@
 #                                                         #
 #*********************************************************#
 
-* 1.2 - Thu Mai 16 2013
+* 1.2 - Thu May 16 2013
+- General:
+-
+-   Moved project to github: https://github.com/ovido/check_rhev3
+-
 - New features:
 -   Verify RHEV-M certificate (Ticket #23)
 -   Allow authentication sessions for authentication in RHEV >= 3.1 and oVirt >= 3.1 (Ticket #24)
