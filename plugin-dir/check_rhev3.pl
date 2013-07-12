@@ -364,7 +364,7 @@ sub check_dc{
 
 sub check_dc_version{
   print "[D] check_dc_version: Called function check_dc_version\n" if $o_verbose == 3;
-  my $vref = get_result("/datacenters?search=$o_rhev_dc","data_centers","version");
+  my $vref = get_result("/datacenters?search=name%3D$o_rhev_dc","data_centers","version");
   my %version = %{ $vref };
   my $versions = undef;
   foreach my $v (keys %version){
@@ -413,7 +413,7 @@ sub check_cluster_status{
   my $subcheck = $_[0];
   print "[D] check_cluster_status: Input parameter \$subcheck: $subcheck\n" if $o_verbose == 3;
   # get cluster id
-  my $iref = get_result("/clusters?search=$o_rhev_cluster","clusters","id");
+  my $iref = get_result("/clusters?search=name%3D$o_rhev_cluster","clusters","id");
   # get host status with cluster id  
   my %id = %{ $iref };
   print "[D] check_cluster_status: \%id: " if $o_verbose == 3; print Dumper(%id) if $o_verbose == 3;
@@ -594,7 +594,7 @@ sub check_vmpool{
 sub check_vmpool_usage{
   print "[D] check_vmpool_usage: Called function check_vmpool_usage.\n" if $o_verbose == 3;
   # get vmpool id
-  my $iref = get_result("/vmpools?search=$o_rhev_vmpool","vmpools","id");
+  my $iref = get_result("/vmpools?search=name%3D$o_rhev_vmpool","vmpools","id");
   # get vm status with vmpool id  
   my %id = %{ $iref };
   print "[D] check_vmpool_usage: \%id: " if $o_verbose == 3; print Dumper(%id) if $o_verbose == 3;
@@ -769,7 +769,7 @@ sub check_istatus{
   $url =~ s/_//g;
   print "[D] check_istatus: Converted variable \$url: $url\n" if $o_verbose == 3;
   # get datacenter or cluster id
-  my $iref = get_result("/$url?search=$search",$component,"id");
+  my $iref = get_result("/$url?search=name%3D$search",$component,"id");
   my %id = %{ $iref };
   print "[D] check_istatus: \%id: " if $o_verbose == 3; print Dumper(%id) if $o_verbose == 3;
 
@@ -877,7 +877,7 @@ sub check_statistics{
   print "[D] check_statistics: Converted variable \$url: $url\n" if $o_verbose == 3;
 
   # get datacenter, host or vm id
-  my $iref = get_result("/$url?search=$search",$component,"id");
+  my $iref = get_result("/$url?search=name%3D$search",$component,"id");
   my %id = %{ $iref };
   print "[D] check_statistics: \%id: " if $o_verbose == 3; print Dumper(%id) if $o_verbose == 3;
 
