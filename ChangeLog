@@ -4,9 +4,12 @@
 #                                                         #
 #*********************************************************#
 
+* 1.2.1 - Tue Jul 23 2013
+- Bug fixed:
+-   Fixed search regex for host/network search
+
 * 1.2 - Thu May 16 2013
 - General:
--
 -   Moved project to github: https://github.com/ovido/check_rhev3
 -
 - New features:

@@ -5,8 +5,9 @@
 #                                                     #
 #  Name:    check_rhev3                               #
 #                                                     #
-#  Version: 1.2.0                                     #
+#  Version: 1.2.1                                     #
 #  Created: 2012-08-13                                #
+#  Last Update: 2013-07-23                            #
 #  License: GPL - http://www.gnu.org/licenses         #
 #  Copyright: (c)2012 ovido gmbh                      #
 #  Author:  Rene Koch <r.koch@ovido.at>               #
@@ -53,7 +54,7 @@ my $perfdata	= 1;
 
 # Variables
 my $prog	= "check_rhev3";
-my $version	= "1.2.0";
+my $version	= "1.2.1";
 my $projecturl  = "https://github.com/ovido/check_rhev3";
 my $cookie	= "/var/tmp";	# default path to cookie file
 
