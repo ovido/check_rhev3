@@ -796,7 +796,7 @@ sub check_istatus{
 	  my $match = 0;
 	  if (scalar @o_nics > 0){
 	    for (my $n=0;$n<=$#o_nics;$n++){
-	      $match = 1 if $val =~ /$o_nics[$n]/;
+	      $match = 1 if $val =~ /$o_nics[$n]$/;
 	    }
 	    next unless $match == 1;
 	  }
@@ -908,7 +908,7 @@ sub check_statistics{
 	my $match = 0;
 	if (scalar @o_nics > 0){
 	  for (my $n=0;$n<=$#o_nics;$n++){
-	    $match = 1 if $nic =~ /$o_nics[$n]/;
+	    $match = 1 if $nic =~ /$o_nics[$n]$/;
 	  }
 	  next unless $match == 1;
 	}
