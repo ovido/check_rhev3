@@ -1033,8 +1033,12 @@ sub check_statistics{
       print "[V] Statistics: Output: $output\n" if $o_verbose >= 2;
     }
   }
-  exit_plugin($status,$statistics,$output.$perf);
-
+  if (! defined $output || ! defined $perf){
+  	exit_plugin("unknown",$statistics,"Performance data not found!");
+  }else{
+    exit_plugin($status,$statistics,$output.$perf);
+  }
+  
 }
 
 
