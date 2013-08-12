@@ -541,7 +541,7 @@ sub check_host{
       if (defined $o_subcheck){
 	check_istatus("hosts",$o_rhev_host,"network") if $o_subcheck eq "status";
 	check_statistics("hosts","$o_rhev_host","traffic") if $o_subcheck eq "traffic";
-#	check_statistics("hosts","$o_rhev_host","errors") if $o_subcheck eq "errors";
+	check_statistics("hosts","$o_rhev_host","errors") if $o_subcheck eq "errors";
 	print_unknown("network");
       }else{	check_istatus("hosts",$o_rhev_host,"network");	}
     }else{ 
@@ -595,7 +595,7 @@ sub check_vm{
     if ($o_check eq "network"){
       if (defined $o_subcheck){
 	check_statistics("vms","$o_rhev_vm","traffic") if $o_subcheck eq "traffic";
-#	check_statistics("vms","$o_rhev_vm","errors") if $o_subcheck eq "errors";
+	check_statistics("vms","$o_rhev_vm","errors") if $o_subcheck eq "errors";
 	print_unknown("network");
       }else{
 	print "[V]: VM: No check is specified, checking network traffic.\n" if $o_verbose >= 2;
@@ -1026,10 +1026,11 @@ sub check_statistics{
         }
 
         # process errors - we need a temp file for this as errors are an increasing value
-	# This feature will be available in 1.1
-#        if ($statistics eq "errors"){
-#          check_nic_errors($key,$nic,$rethash{$key}{$nic}{usage})
-#        }
+        if ($statistics eq "errors"){
+          my $errors = check_nic_errors($key, $nic, $rethash{$key}{$nic}{usage});
+          # update %rethash with real errors
+          $rethash{$key}{$nic}{usage} = $errors;
+        }
 
         if ( ($rethash{$key}{$nic}{usage} < $o_warn) && ($rethash{$key}{$nic}{usage} < $o_crit) ){
           $status = "ok" unless ($status eq "warning" || $status eq "critical");
@@ -1233,18 +1234,19 @@ sub get_stats {
       my $network = undef;
       if ($statistics eq "traffic"){
         print "[V] Statistics: Getting Network Traffic Usage.\n" if $o_verbose >= 2;
-	$network = "data.current";
+	    $network = "data.current";
       }else{
         print "[V] Statistics: Getting Network Errors.\n" if $o_verbose >= 2; 
-	$network = "errors.total";
+	    $network = "errors.total";
       }
       # TODO: check this!
       # RHEV API documentation says that these values are in bytes/second but it seems as these are
       # Mbyte/second
       my $rx = $result{statistic}{"$network.rx"}{values}{value}{datum};
       my $tx = $result{statistic}{"$network.tx"}{values}{value}{datum};
+      my $total = ($rx + $tx);
       # convert to Mbit/s
-      my $total = ($rx + $tx) * 8;
+      $total = $total * 8 if $statistics eq "traffic";
       $rethash{$key}{usage} = $total;
       $rethash{$key}{rx} = $rx;
       $rethash{$key}{tx} = $tx;
@@ -1393,6 +1395,79 @@ sub check_cstatus{
   eval_status(ucfirst($component),$rref);
 }
 
+
+#***************************************************#
+#  Function check_nic_errors                        #
+#---------------------------------------------------#
+#  Check if nic errors increased since last run.    #
+#  ARG1: host                                       #
+#  ARG1: nic                                        #
+#  ARG1: errors                                     #
+#***************************************************#
+
+sub check_nic_errors{
+  print "[D] check_nic_errors: Called function check_nic_errors.\n" if $o_verbose == 3;
+  my $host = $_[0];
+  my $nic = $_[1];
+  my $error = $_[2];
+  print "[D] check_nic_errors: Input parameter \$host: $host\n" if $o_verbose == 3;
+  print "[D] check_nic_errors: Input parameter \$nic: $nic\n" if $o_verbose == 3;
+  print "[D] check_nic_errors: Input parameter \$error: $error\n" if $o_verbose == 3;
+  
+  my $return;
+  # check if errors file exist
+  if (! -d $cookie . "/" . $host){
+   	if (! mkdir $cookie . "/" . $host){
+   	  print "Can't create directory: $cookie/$host: $!";
+   	  exit $ERRORS{$status{'unknown'}};
+   	}
+  }
+  # process errors
+  if (-e $cookie ."/" . $host . "/" . $nic){
+   	if (! -r $cookie . "/" . $host . "/" . $nic){
+   	  print "Interface errors file $cookie/$host/$nic isn't readable!\n";
+   	  exit $ERRORS{$status{'unknown'}};
+   	}
+   	my $errors = `cat $cookie/$host/$nic`;
+   	if ($errors !~ /^(\d)+$/){
+   	  print "Interface errors in file $cookie/$host/$nic not a number: $errors\n";
+        exit $ERRORS{$status{'unknown'}};
+   	}
+   	$return = $error - $errors;
+   	# set counter to 0 if value is negative
+   	# this can happen if counter is reseted on host (e.g. reboot)
+   	$return = 0 if $return < 0;
+  	write_errors_file($cookie . "/" . $host . "/" . $nic, $return);
+  }else{
+  	$return = $error;
+  	write_errors_file($cookie . "/" . $host . "/" . $nic, $return);
+  }
+  
+  return $return;
+  
+}
+
+#***************************************************#
+#  Function write_errors_file                       #
+#---------------------------------------------------#
+#  Write interface errors into a file.              #
+#  ARG1: filename                                   #
+#  ARG2: content                                    #
+#***************************************************#
+
+sub write_errors_file{
+  print "[D] write_errors_file: Called function write_errors_file.\n" if $o_verbose == 3;
+  print "[D] write_errors_file: Input parameter: $_[0]\n" if $o_verbose == 3;
+  print "[D] write_errors_file: Input parameter: $_[1]\n" if $o_verbose == 3;
+  if (! open ERRORS, ">$_[0]"){
+  	print "RHEV $status{'unknown'}: Can't open file $_[0] for writing: $!\n";
+	exit $ERRORS{'UNKNOWN'};
+  }else{
+	print ERRORS $_[1];
+	close ERRORS;
+	chmod (0600, $_[0]);
+  }
+}
 
 #***************************************************#
 #  Function eval_status                             #
