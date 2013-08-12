@@ -111,8 +111,8 @@ sub parse_options(){
 	'P:s'	=> \$o_rhev_vmpool,	'vmpool:s'	=> \$o_rhev_vmpool,
 	'l:s'	=> \$o_check,		'check:s'	=> \$o_check,
 	's:s'	=> \$o_subcheck,	'subcheck:s'	=> \$o_subcheck,
-	'w:f'	=> \$o_warn,		'warning:f'	=> \$o_warn,
-	'c:f'	=> \$o_crit,		'critical:f'	=> \$o_crit,
+	'w:s'	=> \$o_warn,		'warning:s'	=> \$o_warn,
+	'c:s'	=> \$o_crit,		'critical:s'	=> \$o_crit,
 					'ca-file:s'	=> \$o_ca_file,
 	'o'	=> \$o_cookie,		'cookie'	=> \$o_cookie,
 	'n:s'	=> \@o_nics,		'nics:s'	=> \@o_nics
@@ -200,6 +200,58 @@ sub parse_options(){
       print "Can't read Certificate Authority file: $o_ca_file!\n";
       exit $ERRORS{$status{'unknown'}};
     }
+  }
+  
+  # storage warnings and criticals can be % or M/G/T
+  if (defined $o_rhev_storage){
+  	# convert warning into bytes
+  	if (defined $o_warn){
+  	  if ($o_warn =~ /^(\d)+M$/){
+  	    $o_warn =~ s/M//g;
+  	    $o_warn = $o_warn * 1024 * 1024;
+  	  }elsif ($o_warn =~ /^(\d)+G$/){
+  	  	$o_warn =~ s/G//g;
+  	  	$o_warn = $o_warn * 1024 * 1024 * 1024;
+  	  }elsif ($o_warn =~ /^(\d)+T$/){
+  	  	$o_warn =~ s/T//g;
+  	  	$o_warn = $o_warn * 1024 * 1024 * 1024 * 1024;
+  	  }elsif ($o_warn =~ /^(\d)+%$/){
+  	  	$o_warn =~ s/%//g;
+  	  }elsif ($o_warn !~ /^(\d)+$/ && $o_warn !~ /^(\d)+.(\d)+$/){
+  	    print "Invalid character in warning argument: $o_warn\n";
+  	    exit $ERRORS{$status{'unknown'}};
+  	  }
+  	}
+  	# convert critical into bytes
+  	if (defined $o_crit){
+  	  if ($o_crit =~ /^(\d)+M$/){
+  	    $o_crit =~ s/M//g;
+  	    $o_crit = $o_crit * 1024 * 1024;
+  	  }elsif ($o_crit =~ /^(\d)+G$/){
+  	  	$o_crit =~ s/G//g;
+  	  	$o_crit = $o_crit * 1024 * 1024 * 1024;
+  	  }elsif ($o_crit =~ /^(\d)+T$/){
+  	  	$o_crit =~ s/T//g;
+  	  	$o_crit = $o_crit * 1024 * 1024 * 1024 * 1024;
+  	  }elsif ($o_crit =~ /^(\d)+%$/){
+  	  	$o_crit =~ s/%//g;
+  	  }elsif ($o_crit !~ /^(\d)+$/ && $o_crit !~ /^(\d)+.(\d)+$/){
+  	    print "Invalid character in critical argument: $o_crit\n";
+  	    exit $ERRORS{$status{'unknown'}};
+  	  }
+  	}
+  }else{
+  	if (defined $o_warn && $o_warn !~ /^(\d)+$/ && $o_warn !~ /^(\d)+%$/){
+  	  print "Invalid character in warning argument: $o_warn\n";
+  	  exit $ERRORS{$status{'unknown'}};
+  	}
+  	if (defined $o_crit && $o_crit !~ /^(\d)+$/ && $o_crit !~ /^(\d)+%$/){
+  	  print "Invalid character in critical argument: $o_crit\n";
+  	  exit $ERRORS{$status{'unknown'}};
+  	}
+  	# chop %
+  	chop $o_warn if defined $o_crit && $o_warn =~ /^(\d)+%$/;
+  	chop $o_crit if defined $o_crit && $o_crit =~ /^(\d)+%$/;
   }
 }
 
@@ -958,7 +1010,7 @@ sub check_statistics{
     if ($statistics eq "traffic" || $statistics eq "errors"){
       # go through nic hash
       foreach my $nic (keys %{ $rethash{$key} } ){
-	my $uom = 'MB' if $statistics eq "traffic";
+	    my $uom = 'MB' if $statistics eq "traffic";
            $uom = 'c'  if $statistics eq "errors";
         my $used = "used" unless $statistics eq "cpu.load.avg.5m";
            $used = "" if $statistics eq "errors";
@@ -966,7 +1018,7 @@ sub check_statistics{
           $perf .= $statistics . "_" . "$nic=$rethash{$key}{$nic}{usage}$uom;$o_warn;$o_crit;0; ";
           # loop through hash if stats are given
           foreach my $stat (keys %{ $rethash{ $key }{ $nic }{stats} }){
-	    $perf .= $stat . "_" . "$nic=$rethash{$key}{$nic}{stats}{$stat};";
+	        $perf .= $stat . "_" . "$nic=$rethash{$key}{$nic}{stats}{$stat};";
           }
           print "[V] Statistics: Performance data: $perf.\n" if $o_verbose >= 2;
         }else{
@@ -1003,11 +1055,24 @@ sub check_statistics{
       if ($perfdata == 1){
         my $tmp = $statistics;
            $tmp .= "_" . $key if $statistics eq "storage";
-        $perf .= "$tmp=$rethash{$key}{usage}$uom;$o_warn;$o_crit;0; ";
+           $perf .= "$tmp=$rethash{$key}{usage}$uom;";
+        # always use warning and critical values in percentage for storagedomains to
+        # avoid breaking existing pnp graphs
+        if (defined $rethash{$key}{warnPercent}){
+           $perf .= "$rethash{$key}{warnPercent};";
+        }else{
+           $perf .= "$o_warn;";
+        }
+        if (defined $rethash{$key}{critPercent}){
+           $perf .= "$rethash{$key}{critPercent};";
+        }else{
+           $perf .= "$o_crit;";
+        }
+          $perf .= "0; ";
         # loop through hash if stats are given
         foreach my $stat (keys %{ $rethash{ $key }{stats} }){
-	  $stat .= "_" . $key if $statistics eq "storage";
-	  $perf .= "$stat=$rethash{$key}{stats}{$stat};;;0; ";
+	      $stat .= "_" . $key if $statistics eq "storage";
+	      $perf .= "$stat=$rethash{$key}{stats}{$stat};;;0; ";
         }
         print "[V] Statistics: Performance data: $perf.\n" if $o_verbose >= 2;
       }else{
@@ -1016,18 +1081,41 @@ sub check_statistics{
 
       # storage domains don't provide correct values when not attached
       if ($rethash{$key}{usage} == -1){
-	$status = "critical";
-	$rethash{$key}{usage} = "?";
-	print "[V] Statistics: Status: $status.\n" if $o_verbose >= 2;
+	    $status = "critical";
+	    $rethash{$key}{usage} = "?";
+	    print "[V] Statistics: Status: $status.\n" if $o_verbose >= 2;
       }else{
-        if ( ($rethash{$key}{usage} < $o_warn) && ($rethash{$key}{usage} < $o_crit) ){
-          $status = "ok" unless ($status eq "warning" || $status eq "critical");
-          print "[V] Statistics: Status: $status.\n" if $o_verbose >= 2;
-        }elsif ($rethash{$key}{usage} < $o_crit){
-          $status = "warning" unless $status eq "critical";
-        }else{
-          $status = "critical";
-        }
+      	my $warn_key = "usage";
+      	my $crit_key = "usage";	
+      	# are warning and critical values in bytes or %?
+      	$warn_key = "usageBytes" if $o_warn > 100;
+      	$crit_key = "usageBytes" if $o_crit > 100;
+      	if ($o_warn > 100){
+      	  if ($rethash{$key}{$warn_key} > $o_warn){
+      	  	$status = "ok" unless ($status eq "warning" || $status eq "critical");
+      	  }else{
+      	  	$status = "warning" unless $status eq "critical";
+      	  }
+      	}else{
+      	  if ($rethash{$key}{$warn_key} < $o_warn){
+      	  	$status = "ok" unless ($status eq "warning" || $status eq "critical");
+      	  }else{
+      	  	$status = "warning" unless $status eq "critical";
+      	  }
+      	}
+      	if ($o_crit > 100){
+      	  if ($rethash{$key}{$crit_key} > $o_crit){
+      	  	$status = "ok" unless ($status eq "warning" || $status eq "critical");
+      	  }else{
+      	  	$status = "critical";
+      	  }
+      	}else{
+      	  if ($rethash{$key}{$crit_key} < $o_crit){
+      	  	$status = "ok" unless ($status eq "warning" || $status eq "critical");
+      	  }else{
+      	  	$status = "critical";
+      	  }
+      	}
       }
       $output .= "$rethash{$key}{usage}$uom $used ($key) ";
       print "[V] Statistics: Output: $output\n" if $o_verbose >= 2;
@@ -1184,6 +1272,10 @@ sub get_stats {
       my $storage_usage     = sprintf("%.2f", $storage_used / ($storage_used + $storage_available) * 100) if defined $storage_available;
          $storage_usage     = -1 if ! defined $storage_available;
       $rethash{$key}{usage} = $storage_usage;
+      $rethash{$key}{usageBytes} = $storage_used;
+      # also return warning and critical values in % to avoid breaking existing pnp graphs
+      $rethash{$key}{warnPercent} = sprintf("%.2f", $o_warn / ($storage_used + $storage_available) *100) if $o_warn > 100;
+      $rethash{$key}{critPercent} = sprintf("%.2f", $o_crit / ($storage_used + $storage_available) *100) if $o_crit > 100;
       print "[V] Statistics: Storage Usage of $key: $storage_usage.\n" if $o_verbose >= 2;
     }
   }
