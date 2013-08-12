@@ -5,7 +5,7 @@
 #                                                     #
 #  Name:    check_rhev3                               #
 #                                                     #
-#  Version: 1.2.1                                     #
+#  Version: 1.3.0-alpha                               #
 #  Created: 2012-08-13                                #
 #  Last Update: 2013-07-23                            #
 #  License: GPL - http://www.gnu.org/licenses         #
@@ -54,7 +54,7 @@ my $perfdata	= 1;
 
 # Variables
 my $prog	= "check_rhev3";
-my $version	= "1.2.1";
+my $version	= "1.3.0-alpha";
 my $projecturl  = "https://github.com/ovido/check_rhev3";
 my $cookie	= "/var/tmp";	# default path to cookie file
 
@@ -1387,59 +1387,90 @@ sub rhev_connect{
   my $cf = `echo "$o_rhevm_host-$rhevm_user" | base64`;
   chomp $cf;
   print "[V] REST-API: cookie filename: $cf\n" if $o_verbose >= 2;
-  if (defined $o_cookie) {
-    print "[D] rhev_connect: Using cookie authentication.\n" if $o_verbose == 3;
-    $rr->header('Prefer' => 'persistent-auth');
-    # check if cookie file exists
-    if (-r $cookie . "/" . $cf){
-      my $jsessionid = `cat $cookie/$cf`;
-      chomp $jsessionid;
-      print "[D] rhev_connect: Using cookie: $jsessionid\n" if $o_verbose == 3;
-      $rr->header('cookie' => $jsessionid);
-    }else{
-      print "[D] rhev_connect: No cookie file found - using username and password\n" if $o_verbose == 3;
+  print "[D] rhev_connect: Trying cookie authentication.\n" if $o_verbose == 3;
+  $rr->header('Prefer' => 'persistent-auth');
+  my $re = undef;
+  # check if cookie file exists
+  if (-r $cookie . "/" . $cf){
+  	# cookie based authentication
+    my $jsessionid = `cat $cookie/$cf`;
+    chomp $jsessionid;
+    print "[D] rhev_connect: Using cookie: $jsessionid\n" if $o_verbose == 3;
+    $rr->header('cookie' => $jsessionid);
+    $re = $ra->request($rr);
+    # fall back to username and password if cookie auth was not successful
+    if (! $re->is_success){
+      print "[V] REST-API: Cookie authentication failed - using username and password.\n" if $o_verbose >= 2;
       $rr->authorization_basic($rhevm_user,$rhevm_pwd);
+      $re = rest_api_connect($rr, $ra, $cookie . "/" . $cf);
     }
+    print "[V] REST-API: " . $re->headers_as_string if $o_verbose >= 2;
+    print "[D] rhev_connect: " . $re->content if $o_verbose >= 3;
   }else{
-    print "[D] rhev_connect: Using username and password authentication.\n" if $o_verbose == 3;
+  	# authentication with username and password
+    print "[D] rhev_connect: No cookie file found - using username and password\n" if $o_verbose == 3;
     $rr->authorization_basic($rhevm_user,$rhevm_pwd);
-  }
-
-  my $re = $ra->request($rr);
-  if (! $re->is_success){	
-    print "RHEV $status{'critical'}: Can't connect to RHEVM-API.\n"; 
-    if (-f $cookie . "/" . $cf){
-      print "[D] rhev_connect: Deleting file $cookie/$cf\n" if $o_verbose == 3;
-      unlink $cookie . "/" . $cf;
-    }
-    exit $ERRORS{'CRITICAL'};	
-  }
-  print "[V] REST-API: " . $re->headers_as_string if $o_verbose >= 2;
-  print "[D] rhev_connect: " . $re->content if $o_verbose >= 3;
-
-  # write cookie into file
-  if (defined $o_cookie){
-    # Set-Cookie is only available when connecting with username and password
-    if ($re->header('Set-Cookie')){
-      my @jsessionid = split/ /,$re->header('Set-Cookie');
-      chop $jsessionid[0];
-      print "[V] REST_API: jsessionid: $jsessionid[0]\n" if $o_verbose >= 2;
-      print "[D] rhev_connect: Creating new cookie file $cookie/$cf.\n" if $o_verbose == 3;
-      if (! open COOKIE, ">$cookie/$cf"){
-	print "RHEV $status{'critical'}: Can't open file $cookie/$cf for writing: $!\n";
-	exit $ERRORS{'CRITICAL'};
-      }else{
-	print COOKIE $jsessionid[0];
-	close COOKIE;
-	chmod (0600, $cookie . "/" . $cf);
-      }
-    }
+    $re = rest_api_connect($rr, $ra, $cookie . "/" . $cf);
   }
 
   my $result = eval { XMLin($re->content) };
   print "RHEV $status{'critical'}: Error in XML returned from RHEVM - enable debug mode for details.\n" if $@;
   return $result;
 
+}
+
+
+#***************************************************#
+#  Function: rest_api_connect                       #
+#---------------------------------------------------#
+#  Connect to RHEV Manager via REST-API             #
+#  ARG1: HTTP::Request                              #
+#  ARG2: LWP::Useragent                             #
+#  ARG3: Cookie                                     #
+#***************************************************#
+
+sub rest_api_connect{
+  print "[D] rest_api_connect: Called function rest_api_connect.\n" if $o_verbose == 3;
+  print "[V] REST-API: Connecting to REST-API.\n" if $o_verbose >= 2;
+  print "[D] rest_api_connect: Input parameter: $_[0].\n" if $o_verbose == 3;
+  print "[D] rest_api_connect: Input parameter: $_[1].\n" if $o_verbose == 3;
+  print "[D] rest_api_connect: Input parameter: $_[2].\n" if $o_verbose == 3;
+  
+  my $rr = $_[0];
+  my $ra = $_[1];
+  my $cookie = $_[2];
+  
+  my $re = $ra->request($rr);
+  if (! $re->is_success){	
+    print "RHEV $status{'unknown'}: Failed to connect to RHEVM-API or received invalid response.\n"; 
+    if (-f $cookie){
+      print "[D] rhev_connect: Deleting file $cookie\n" if $o_verbose == 3;
+      unlink $cookie;
+    }
+    exit $ERRORS{'UNKNOWN'};	
+  }
+  print "[V] REST-API: " . $re->headers_as_string if $o_verbose >= 2;
+  print "[D] rest_api_connect: " . $re->content if $o_verbose >= 3;
+
+  # write cookie into file
+  # Set-Cookie is only available when connecting with username and password
+  if ($re->header('Set-Cookie')){
+    my @jsessionid = split/ /,$re->header('Set-Cookie');
+    chop $jsessionid[0];
+    print "[V] REST_API: jsessionid: $jsessionid[0]\n" if $o_verbose >= 2;
+    print "[D] rest_api_connect: Creating new cookie file $cookie.\n" if $o_verbose == 3;
+    if (! open COOKIE, ">$cookie"){
+  	  print "RHEV $status{'unknown'}: Can't open file $cookie for writing: $!\n";
+	  exit $ERRORS{'UNKNOWN'};
+    }else{
+	  print COOKIE $jsessionid[0];
+	  close COOKIE;
+	  chmod (0600, $cookie);
+    }
+  }
+  
+  return $re;
+  
 }
 
 exit $ERRORS{$status{'unknown'}};
