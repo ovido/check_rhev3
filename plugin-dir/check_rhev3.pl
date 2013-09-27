@@ -7,9 +7,9 @@
 #                                                     #
 #  Version: 1.3.0-alpha                               #
 #  Created: 2012-08-13                                #
-#  Last Update: 2013-07-23                            #
+#  Last Update: 2013-09-27                            #
 #  License: GPL - http://www.gnu.org/licenses         #
-#  Copyright: (c)2012 ovido gmbh                      #
+#  Copyright: (c)2012,2013 ovido gmbh                 #
 #  Author:  Rene Koch <r.koch@ovido.at>               #
 #  URL: https://github.com/ovido/check_rhev3          #
 #                                                     #
@@ -894,11 +894,11 @@ sub check_istatus{
     $perf = ""; 
   }
   if ( ( ($ok == $size) && ($size != 0) ) || ( ($ok > $o_warn) && ($ok > $o_crit) ) ){
-    exit_plugin('ok',ucfirst($url),"$ok/$size " . ucfirst($subcheck) . " with state $state" . $perf);
+    exit_plugin('ok',ucfirst($subcheck),"$ok/$size " . ucfirst($subcheck) . " with state $state" . $perf);
   }elsif ($ok > $o_crit){
-    exit_plugin('warning',ucfirst($url),"$ok/$size " . ucfirst($subcheck) . " with state $state" . $perf);
+    exit_plugin('warning',ucfirst($subcheck),"$ok/$size " . ucfirst($subcheck) . " with state $state" . $perf);
   }else{
-    exit_plugin('critical',ucfirst($url),"$ok/$size " . ucfirst($subcheck) . " with state $state" . $perf);
+    exit_plugin('critical',ucfirst($subcheck),"$ok/$size " . ucfirst($subcheck) . " with state $state" . $perf);
   }
 #  print_notfound("Storage", "???");
 }
