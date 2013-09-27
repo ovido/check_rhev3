@@ -1275,6 +1275,9 @@ sub get_stats {
          $storage_usage     = -1 if ! defined $storage_available;
       $rethash{$key}{usage} = $storage_usage;
       $rethash{$key}{usageBytes} = $storage_used;
+      # set default values for warning and critical
+      $o_warn = 60 unless defined $o_warn;
+      $o_crit = 80 unless defined $o_crit;
       # also return warning and critical values in % to avoid breaking existing pnp graphs
       $rethash{$key}{warnPercent} = sprintf("%.2f", $o_warn / ($storage_used + $storage_available) *100) if $o_warn > 100;
       $rethash{$key}{critPercent} = sprintf("%.2f", $o_crit / ($storage_used + $storage_available) *100) if $o_crit > 100;
