@@ -1,13 +1,10 @@
-I'm happy to announce version 1.2 of check_rhev3.
+I'm happy to announce version 1.3 of check_rhev3.
 
 check_rhev3 is a monitoring plugin for Icinga/Nagios and it's forks, which is 
 used to monitor datacenters, clusters, hosts, vms, vm pools and storage domains 
 of Red Hat Enterprise Virtualization (RHEV) and oVirt virtualization environments.
 
-The download locations are
-  * https://labs.ovido.at/download/check_rhev3/check_rhev3-1.2.tar.gz
-  * https://labs.ovido.at/download/check_rhev3/nagios-plugins-rhev3-1.2-1.el6.i686.rpm
-  * https://labs.ovido.at/download/check_rhev3/nagios-plugins-rhev3-1.2-1.el6.x86_64.rpm
+Download this plugin from: https://github.com/ovido/check_rhev3/releases/check_rhev3-1.3
   
 For further information on how to install this plugin visit:
   https://github.com/ovido/check_rhev3/wiki/Installation-Documentation
@@ -17,16 +14,16 @@ https://github.com/ovido/check_rhev3/wiki/Usage-Documentation
 
 
 Changelog:
-- General:
--   Moved project to github: https://github.com/ovido/check_rhev3
--
 - New features:
--   Verify RHEV-M certificate (Ticket #23)
--   Allow authentication sessions for authentication in RHEV >= 3.1 and oVirt >= 3.1 (Ticket #24)
--   Use option -n <nic> to check a specific nic (Ticket #25)
--
+-   Cookie based authentication as default auth method (Issue #1)
+-   Use fixed values for warning and critical values of storage domans (Issue #3)
+-   Network interface error monitoring (Issue #4)
+-   Improved status messages for NICs, storage (Issue #7)
+
 - Bugs fixed:
--   Performance data issue with check_multi (Ticket #9) 
+-    Improved filter regex for NICs (Issue #2)
+-    Optimized error messages (Issue #6)
+-    Memory usage fix (Issue #10)
 
 
 If you have any questions or ideas, please drop me an email: ​
