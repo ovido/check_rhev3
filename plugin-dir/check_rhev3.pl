@@ -1219,6 +1219,10 @@ sub get_stats {
       }else{
 	my $mem_installed = $result{statistic}{"memory.installed"}{values}{value}{datum};
 	my $mem_used      = $result{statistic}{"memory.used"}{values}{value}{datum};
+	  # fix issue with negative memory usage
+	  if ($mem_used < 0){
+        $mem_used = $mem_installed + $mem_used;
+	  }
   	   $memory_usage  = sprintf("%.2f", $mem_used / $mem_installed * 100);
       }
       $rethash{$key}{usage} = $memory_usage;
