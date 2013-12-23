@@ -366,6 +366,7 @@ sub print_version{
 # parse command line options
 parse_options();
 print "[V] Starting the main script.\n" if $o_verbose >= 2;
+print "[V] This is $prog version $version.\n" if $o_verbose >= 2;
 
 # What to check?
 print "[V] Checking which component to monitor.\n" if $o_verbose >= 2;
@@ -1542,7 +1543,7 @@ sub rhev_connect{
   my $rhevm_url = "https://" . $o_rhevm_host . ":" . $rhevm_port . $rhevm_api . $_[0];
   print "[V] REST-API: RHEVM-API URL: $rhevm_url\n" if $o_verbose >= 2;
   print "[V] REST-API: RHEVM-API User: $rhevm_user\n" if $o_verbose >= 2;
-  print "[V] REST-API: RHEVM-API Password: $rhevm_pwd\n" if $o_verbose >= 2;
+  #print "[V] REST-API: RHEVM-API Password: $rhevm_pwd\n" if $o_verbose >= 2;
 
   # connect to REST-API
   my $ra = LWP::UserAgent->new();
