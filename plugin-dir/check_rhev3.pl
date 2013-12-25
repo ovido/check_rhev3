@@ -1550,6 +1550,15 @@ sub rhev_connect{
   # connect to REST-API
   my $ra = LWP::UserAgent->new();
      $ra->timeout($rhevm_timeout);
+     $ra->env_proxy;				# read proxy information from env variables
+     
+  # handle no_proxy settings for old LWP::UserAgent versions
+  if ((LWP::UserAgent->VERSION < 6.0) && (defined $ENV{no_proxy})){
+    if ($ENV{no_proxy} =~ $o_rhevm_host){
+      delete $ENV{https_proxy} if defined $ENV{https_proxy};
+      delete $ENV{HTTPS_PROXY} if defined $ENV{HTTPS_PROXY};
+    }
+  }
 
   # SSL certificate verification
   if (defined $o_ca_file){
