@@ -253,7 +253,7 @@ sub parse_options(){
       exit $ERRORS{$status{'unknown'}};
     }
     # chop %
-    chop $o_warn if defined $o_crit && $o_warn =~ /^(\d)+%$/;
+    chop $o_warn if defined $o_warn && $o_warn =~ /^(\d)+%$/;
     chop $o_crit if defined $o_crit && $o_crit =~ /^(\d)+%$/;
   }
 }
@@ -936,7 +936,7 @@ sub check_statistics{
   my $iref = get_result("/$url?search=name%3D$search",$component,"id");
   my %id   = %{ $iref };
   print "[D] check_statistics: \%id: " if $o_verbose == 3; print Dumper(%id) if $o_verbose == 3;
-
+  
   my $status = "unknown";
   my $output = undef;
 
@@ -978,6 +978,17 @@ sub check_statistics{
         $status = 'critical';
       }
     }else{
+      # get warning and critical values for load based on physical CPU cores
+      if ((! defined $o_warn || ! defined $o_crit) && $statistics eq "cpu.load.avg.5m"){
+      	my $lref  = get_result("/$url/$id{ $key }","cpu","topology");
+        my %cputop = %{ $lref };
+        print "[D] check_statistics: \%cputop: " if $o_verbose == 3; print Dumper(%cputop) if $o_verbose == 3;
+        # warning = #cores
+        # critical = #cores * 2
+        $o_warn = $cputop{ 'sockets' } * $cputop{ 'cores' } unless defined $o_warn;
+        $o_crit = $cputop{ 'sockets' } * $cputop{ 'cores' } * 2 unless defined $o_crit;
+      }
+    	
       # check cpu, load and memory
       my $iret = get_stats($component,$id{ $key },$subcheck,$statistics,$key);
       my %temp = %{ $iret };
@@ -989,13 +1000,11 @@ sub check_statistics{
   # default values for warning and critical if missing
   if (! defined $o_warn){
     $o_warn = 60;
-    $o_warn = 2   if $statistics eq "cpu.load.avg.5m";
     $o_warn = 500 if $statistics eq "traffic";
     $o_warn = 5   if $statistics eq "errors";
   }
   if (! defined $o_crit){
     $o_crit = 80;
-    $o_crit = 4   if $statistics eq "cpu.load.avg.5m";
     $o_crit = 700 if $statistics eq "traffic";
     $o_crit = 10  if $statistics eq "errors";
   }
@@ -1347,6 +1356,10 @@ sub get_result{
   my %return;
 
   print "[D] get_result: Looping through \%result.\n" if $o_verbose == 3;
+  
+  # return CPU topology for dynamic load threshold calculation
+  return $result{$xml}{$search} if $search eq "topology";
+  
   foreach my $key (keys %result){
   chop $xml;
     if (! $result{$xml}{$search} ){
