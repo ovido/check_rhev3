@@ -1508,17 +1508,23 @@ sub eval_status{
   print "[D] eval_status: Input parameter \$component: $component\n" if $o_verbose == 3;
   print "[D] eval_status: Input parameter \@input: @input\n" if $o_verbose == 3;
   my $size = $#input + 1;
-  my $ok = 0;
+  # all possible stati for datacenters, hosts and vms
+  my %comp_state;
 
   foreach (@input){
     print "[V] Eval Status: Status of $component: $_.\n" if $o_verbose >= 2;
     if ($component eq "Storagedomains"){
-      $ok++ if ! $_;            # storage domain status - status ok if not available under /storagedomains - strange isn't it? ;)
-      next;
+      if (! $_){
+        $comp_state{ 'up' }++;            # storage domain status - status ok if not available under /storagedomains - strange isn't it? ;)
+        next;
+      }else{
+        $comp_state{ $_ }++;
+        next;
+      }
     }
-    $ok++ if $_ eq "up";        # datacenter, host and vm status
+    $comp_state{ $_ }++;        # datacenter, host and vm status
   }
-  print "[V] Eval Status: $ok/$size $component OK\n" if $o_verbose >= 2;
+  print "[V] Eval Status: $comp_state{ 'up' }/$size $component OK\n" if $o_verbose >= 2;
   my $state = "UP";
   $o_warn = $size unless defined $o_warn;
   $o_crit = $size unless defined $o_crit;
@@ -1526,17 +1532,34 @@ sub eval_status{
   print "[V] Eval Status: critical value: $o_crit.\n" if $o_verbose >= 2;
   my $perf = undef;
   if ($perfdata == 1){ 
-    $perf = "|$component=$ok;$o_warn;$o_crit;0;";
+    $perf = "|up=$comp_state{ 'up' };$o_warn;$o_crit;0; ";
+    foreach my $comp_status (keys %comp_state){
+      next if $comp_status eq "up";
+      $perf .= "$comp_status=$comp_state{ $comp_status };;;0; ";
+    }
     print "[V] Eval Status: Performance data: $perf.\n" if $o_verbose >= 2;
   }else{ 
     $perf = ""; 
   }
-  if ( ( ($ok == $size) && ($size != 0) ) || ( ($ok > $o_warn) && ($ok > $o_crit) ) ){
-    exit_plugin('ok',$component,"$ok/$size " . ucfirst($component) . " with state $state" . $perf);
-  }elsif ($ok > $o_crit){
-    exit_plugin('warning',$component,"$ok/$size " . ucfirst($component) . " with state $state" . $perf);
+  
+  # give more verbose information about the states
+  my $info = "";
+  if ($o_verbose >= 1){
+  	$info = "[Details: ";
+    foreach my $comp_status (keys %comp_state){
+      $info .= "$comp_state{ $comp_status } $comp_status, ";
+    }
+    chop $info;
+    chop $info;
+    $info .= "]";
+  }
+  
+  if ( ( ($comp_state{ 'up' } == $size) && ($size != 0) ) || ( ($comp_state{ 'up' } > $o_warn) && ($comp_state{ 'up' } > $o_crit) ) ){
+    exit_plugin('ok',$component,"$comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
+  }elsif ($comp_state{ 'up' } > $o_crit){
+    exit_plugin('warning',$component,"$comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
   }else{
-    exit_plugin('critical',$component,"$ok/$size " . ucfirst($component) . " with state $state" . $perf);
+    exit_plugin('critical',$component,"$comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
   }
 }
 
