@@ -4,6 +4,18 @@
 #                                                         #
 #*********************************************************#
 
+* 1.4 - 
+- New features:
+-   Get status of vms on a specific host (Issue #8)
+-   Proxy/No Proxy environment variable support (Issue #12)
+-   Removed RHEV password from debug output and added plugin version number (Issue #13)
+-   Default port changed to 443 (Issue #15)
+-   Improved source code formatting (Issue #16)
+-   Default warning and critical thresholds for CPU load based on number of cores (Issue #17)
+-   More detailed status information for datacenters, hosts, vms and storagedomains (Issue #18)
+- Bugs fixed:
+-   Interface traffic in Mbytes/s instead of Bytes/s (Issue #14)
+
 * 1.3 - Tue Nov 07 2013
 - New features:
 -   Cookie based authentication as default auth method (Issue #1)
