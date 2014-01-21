@@ -445,75 +445,14 @@ sub check_cluster{
   print "[V] Cluster: Checking cluster $o_rhev_cluster.\n" if $o_verbose >= 2;
   # is check given?
   if (defined $o_check){
-    check_cluster_status("hosts") if $o_check eq "hosts";
-    check_cluster_status("vms")   if $o_check eq "vms";
+    check_cstatus("clusterhosts","$o_rhev_cluster") if $o_check eq "hosts";
+    check_cstatus("clustervms","$o_rhev_cluster")   if $o_check eq "vms";
     check_istatus("clusters",$o_rhev_cluster,"networks")   if $o_check eq "networks";
     print_unknown("cluster");
   }else{
     print "[V] Cluster: No check is specified, checking cluster host status.\n" if $o_verbose >= 2;
-    check_cluster_status("hosts");  
+    check_cstatus("clusterhosts","$o_rhev_cluster");
   }
-}
-
-
-#***************************************************#
-#  function check_cluster_status                    #
-#---------------------------------------------------#
-#  Check status of all hosts which belong to this   #
-#  cluster.                                         #
-#  ARG1: components to check (hosts/networks/...)   #
-#  Note: can be used for network status in future   #
-#        releases too...                            #
-#***************************************************#
-
-sub check_cluster_status{
-  print "[D] check_cluster_status: Called function check_cluster_status.\n" if $o_verbose == 3;
-  print "[V] Status: Checking status of $_[0].\n" if $o_verbose >= 2;
-  my $subcheck = $_[0];
-  print "[D] check_cluster_status: Input parameter \$subcheck: $subcheck\n" if $o_verbose == 3;
-  # get cluster id
-  my $iref = get_result("/clusters?search=name%3D$o_rhev_cluster","clusters","id");
-  # get host status with cluster id  
-  my %id = %{ $iref };
-  print "[D] check_cluster_status: \%id: " if $o_verbose == 3; print Dumper(%id) if $o_verbose == 3;
-  my $size = 0;
-  my $ok = 0;
-  print "[D] check_cluster_status: Looping through \%id\n" if $o_verbose == 3;
-  foreach my $key (keys %id){
-    # get status for this cluster id
-    my $rref = check_status($subcheck,"",$id{ $key },"cluster");
-    my @result = @{$rref};
-    print "[D] check_cluster_status: \@result: " if $o_verbose == 3; print @result . "\n" if $o_verbose == 3;
-    print "[D] check_cluster_status: Looping through \@result.\n" if $o_verbose == 3;
-    # count hosts in cluster and hosts with status ok
-    foreach (@result){
-      $size++;
-      $ok++ if $_ eq "up";      # host and vm status
-    }
-    print "[V] Status: Cluster $key: Value of \$ok: $ok, \$size: $size " if $o_verbose >= 2;
-  }
-  my $state = "UP";
-
-  $o_warn = $size unless defined $o_warn;
-  $o_crit = $size unless defined $o_crit;
-  print "[V] Status: warning value: $o_warn.\n" if $o_verbose >= 2;
-  print "[V] Status: critical value: $o_crit.\n" if $o_verbose >= 2;
-  my $perf = undef;
-  if ($perfdata == 1){ 
-    $perf = "|$subcheck=$ok;$o_warn;$o_crit;0;";
-    print "[V] Status: Performance data: $perf.\n" if $o_verbose >= 2;
-  }else{ 
-    $perf = ""; 
-  }
-  if ( ( ($ok == $size) && ($size != 0) ) || ( ($ok > $o_warn) && ($ok > $o_crit) ) ){
-    exit_plugin('ok',"Cluster","$ok/$size " . ucfirst($subcheck) . " with state $state" . $perf);
-  }elsif ($ok > $o_crit){
-    exit_plugin('warning',"Cluster","$ok/$size " . ucfirst($subcheck) . " with state $state" . $perf);
-  }else{
-    exit_plugin('critical',"Cluster","$ok/$size " . ucfirst($subcheck) . " with state $state" . $perf);
-  }
-
-  print_notfound("Cluster", $o_rhev_cluster);
 }
 
 
@@ -733,14 +672,25 @@ sub check_status {
   # call search path only if input is given
   my $rref = undef;
   if ($search eq ""){
-  	if ($components eq "hostvms"){
+  	if ($components eq "hostvms" || $components eq "clustervms"){
   	  $rref= rhev_connect("/vms");
+  	  $component = "vm";
+  	}elsif ($components eq "clusterhosts"){
+  	  $rref = rhev_connect("/hosts");
+  	  $component = "host";
   	}else{
       $rref = rhev_connect("/$components/");
   	}
   }else{
   	if ($components eq "hostvms"){
   	  $rref = rhev_connect("/vms?search=host%3D$search");
+  	  $component = "vm";
+  	}elsif ($components eq "clustervms"){
+  	  $rref = rhev_connect("/vms?search=cluster%3D$search");
+  	  $component = "vm";
+  	}elsif ($components eq "clusterhosts"){
+  	  $rref = rhev_connect("/hosts?search=cluster%3D$search");
+  	  $component = "host";
   	}else{
       $rref = rhev_connect("/$components?search=name%3D$search");
   	}
@@ -1520,6 +1470,8 @@ sub eval_status{
   print "[D] eval_status: Input parameter \@input: @input\n" if $o_verbose == 3;
   # rewrite component name
   $component = "Vms" if $component eq "Hostvms";
+  $component = "Vms" if $component eq "Clustervms";
+  $component = "Hosts" if $component eq "Clusterhosts";
   my $size = $#input + 1;
   # all possible stati for datacenters, hosts and vms
   my %comp_state;
