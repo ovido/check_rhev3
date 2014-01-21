@@ -530,6 +530,7 @@ sub check_host{
   # is check given?
   if (defined $o_check){
     check_cstatus("hosts","$o_rhev_host")  if $o_check eq "status";
+    check_cstatus("hostvms","$o_rhev_host")  if $o_check eq "vms";
     check_statistics("hosts","$o_rhev_host","cpu.load.avg.5m") if $o_check eq "load";
     check_statistics("hosts","$o_rhev_host","cpu") if $o_check eq "cpu";
     check_statistics("hosts","$o_rhev_host","ksm.cpu.current") if $o_check eq "ksm";
@@ -732,9 +733,17 @@ sub check_status {
   # call search path only if input is given
   my $rref = undef;
   if ($search eq ""){
-    $rref = rhev_connect("/$components/");
+  	if ($components eq "hostvms"){
+  	  $rref= rhev_connect("/vms");
+  	}else{
+      $rref = rhev_connect("/$components/");
+  	}
   }else{
-    $rref = rhev_connect("/$components?search=name%3D$search");
+  	if ($components eq "hostvms"){
+  	  $rref = rhev_connect("/vms?search=host%3D$search");
+  	}else{
+      $rref = rhev_connect("/$components?search=name%3D$search");
+  	}
   }
   my %result = %{$rref};
   print "[D] check_status: \%result: " if $o_verbose == 3; print Dumper(%result) if $o_verbose == 3;
@@ -1509,9 +1518,51 @@ sub eval_status{
   my @input = @{ $_[1] };
   print "[D] eval_status: Input parameter \$component: $component\n" if $o_verbose == 3;
   print "[D] eval_status: Input parameter \@input: @input\n" if $o_verbose == 3;
+  # rewrite component name
+  $component = "Vms" if $component eq "Hostvms";
   my $size = $#input + 1;
   # all possible stati for datacenters, hosts and vms
   my %comp_state;
+  # all possible values for dcs/hosts/vms (needed for performance data)
+  if ($component eq "Vms"){
+    $comp_state{ 'powering_up' } = 0;
+    $comp_state{ 'powering_down' } = 0;
+    $comp_state{ 'migrating_from' } = 0;
+    $comp_state{ 'migrating_to' } = 0;
+    $comp_state{ 'wait_for_launch' } = 0;
+    $comp_state{ 'reboot_in_progress' } = 0;
+    $comp_state{ 'saving_state' } = 0;
+    $comp_state{ 'restoring_state' } = 0;
+    $comp_state{ 'powering_down' } = 0;
+    $comp_state{ 'unassigned' } = 0;
+    $comp_state{ 'unknown' } = 0;
+    $comp_state{ 'not_responding' } = 0;
+    $comp_state{ 'image_illegal' } = 0;
+  }elsif ($component eq "Datacenters"){
+  	$comp_state{ 'uninitialized' } = 0;
+  	$comp_state{ 'problematic' } = 0;
+  	$comp_state{ 'contend' } = 0;
+  }elsif ($component eq "Hosts"){
+    $comp_state{ 'error' } = 0;
+    $comp_state{ 'initializing' } = 0;
+    $comp_state{ 'installing' } = 0;
+    $comp_state{ 'install_failed' } = 0;
+    $comp_state{ 'non_responsive' } = 0;
+    $comp_state{ 'pending_approval' } = 0;
+    $comp_state{ 'preparing_for_maintenance' } = 0;
+    $comp_state{ 'connecting' } = 0;
+    $comp_state{ 'reboot' } = 0;
+    $comp_state{ 'unassigned' } = 0;
+  }
+  # values used by hosts and vms
+  if ($component eq "Vms" || $component eq "Hosts"){
+    $comp_state{ 'down' } = 0;
+  }
+  # values used by datacenters and hosts
+  if ($component eq "Datacenters" || $component eq "Hosts"){
+  	$comp_state{ 'maintenance' } = 0;
+  	$comp_state{ 'not_operational' } = 0;
+  }
 
   foreach (@input){
     print "[V] Eval Status: Status of $component: $_.\n" if $o_verbose >= 2;
@@ -1549,6 +1600,8 @@ sub eval_status{
   if ($o_verbose >= 1){
   	$info = "[Details: ";
     foreach my $comp_status (keys %comp_state){
+      # skip 0 values
+      next if $comp_state{ $comp_status } == 0;
       $info .= "$comp_state{ $comp_status } $comp_status, ";
     }
     chop $info;
