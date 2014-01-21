@@ -757,6 +757,8 @@ sub check_status {
       return \@return;
     }
   }
+  $components = "Cluster" if $components eq "clustervms" || $components eq "clusterhosts";
+  $components = "Host" if $components eq "hostvms";
   print "[V] Status: Search pattern $search not found.\n" if $o_verbose >= 2;
   print_notfound(ucfirst($components), $search);
 }
