@@ -43,7 +43,7 @@ use Data::Dumper;
 
 # Configuration
 # all values can be overwritten via command line options
-my $rhevm_port  = 8443;         # default port
+my $rhevm_port  = 443;          # default port
 my $rhevm_api   = "/api";       # default api path
 my $rhevm_timeout = 15;         # default timeout
 
