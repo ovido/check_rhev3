@@ -1,7 +1,7 @@
 <?php
 #
 # Plugin: check_rhev3
-# Author: Rene Koch <r.koch@ovido.at>
+# Author: Rene Koch <rkoch@linuxland.at>
 # Date: 2012/08/14
 #
 

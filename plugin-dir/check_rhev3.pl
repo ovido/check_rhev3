@@ -10,7 +10,8 @@
 #  Last Update: 2013-12-23                            #
 #  License: GPL - http://www.gnu.org/licenses         #
 #  Copyright: (c)2012,2013 ovido gmbh                 #
-#  Author:  Rene Koch <r.koch@ovido.at>               #
+#             (c)2014 Rene Koch                       #
+#  Author:  Rene Koch <rkoch@linuxland.at>            #
 #  URL: https://github.com/ovido/check_rhev3          #
 #                                                     #
 #######################################################
@@ -281,7 +282,8 @@ sub print_usage(){
 #***************************************************#
 sub print_help(){
   print "\nRed Hat Enterprise Virtualization checks for Icinga/Nagios version $version\n";
-  print "GPL license, (c)2012-2013   - Rene Koch <r.koch\@ovido.at>\n\n";
+  print "GPL license, (c)2012-2013   - ovido gmbh <r.koch\@ovido.at>\n";
+  print "             (c)2014        - Rene Koch <rkoch\@linuxland.at>\n\n";
   print_usage();
   print <<EOT;
 
@@ -337,9 +339,9 @@ Options:
     Show details for command-line debugging
     (Icinga/Nagios may truncate output)
 
-Send email to r.koch\@ovido.at if you have questions regarding use
+Send email to rkoch\@linuxland.at if you have questions regarding use
 of this software. To submit patches of suggest improvements, send
-email to r.koch\@ovido.at
+email to rkoch\@linuxland.at
 EOT
 
   exit $ERRORS{$status{'unknown'}};

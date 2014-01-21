@@ -15,7 +15,7 @@
 
 
 AC_PREREQ([2.63])
-AC_INIT([check_rhev3], [1.3], [r.koch@ovido.at])
+AC_INIT([check_rhev3], [1.3], [rkoch@linuxland.at])
 AM_INIT_AUTOMAKE
 
 AC_PREFIX_DEFAULT(/usr/local/nagios/libexec)

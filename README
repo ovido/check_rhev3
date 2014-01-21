@@ -15,7 +15,7 @@ vms, vm pools and storage domains.
 Contributions / Help
 ====================
 
-Send email to r.koch@ovido.at if you have questions regarding use
+Send email to rkoch@linuxland.at if you have questions regarding use
 of this software. Please include the following information in your email:
 * OS type and version
 * Perl version
@@ -23,7 +23,7 @@ Also, run the plugin with the '-vvv' option and provide the resulting
 information. Use "grep -v 'RHEVM-API Password'" to avoid sending your
 RHEV-M user password.
 
-To submit patches of suggest improvements, send email to r.koch@ovido.at.
+To submit patches of suggest improvements, send email to rkoch@linuxland.at.
 
 
 Installation
