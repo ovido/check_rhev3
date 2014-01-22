@@ -963,21 +963,18 @@ sub check_statistics{
   # default values for warning and critical if missing
   if (! defined $o_warn){
     $o_warn = 60;
-    $o_warn = 500 if $statistics eq "traffic";
+    $o_warn = 70 if $statistics eq "traffic";
     $o_warn = 5   if $statistics eq "errors";
   }
   if (! defined $o_crit){
     $o_crit = 80;
-    $o_crit = 700 if $statistics eq "traffic";
+    $o_crit = 90 if $statistics eq "traffic";
     $o_crit = 10  if $statistics eq "errors";
   }
   print "[V] Statistics: warning value: $o_warn.\n" if $o_verbose >= 2;
   print "[V] Statistics: critical value: $o_crit.\n" if $o_verbose >= 2;
 
   my $perf   = "|";
-  # use Bytes instead of Bites for performance data
-  $o_warn = $o_warn / 8 if $statistics eq "traffic";
-  $o_crit = $o_crit / 8 if $statistics eq "traffic";
   # go through hash
   foreach my $key (keys %rethash){
     print "[D] check_statistics: \%rethash: " if $o_verbose == 3; print Dumper(%rethash) if $o_verbose == 3;
@@ -1015,10 +1012,10 @@ sub check_statistics{
         }else{
           $status = "critical";
         }
-        # Display Mbit/s instead of MB
-        $uom = " Mbit/s" if $uom eq "MB";
+        # Display MB/s instead of MB
+        $uom = " MB/s" if $uom eq "MB";
         $uom = " Errors" if $uom eq "c";
-        $output .= "$nic: $rethash{$key}{$nic}{usage}$uom ";
+        $output .= "$nic: " . sprintf("%.2f", $rethash{$key}{$nic}{usage}) . "$uom ";
         print "[V] Statistics: Output: $output\n" if $o_verbose >= 2;
       }
       $output .= "($key) ";
@@ -1218,14 +1215,12 @@ sub get_stats {
         print "[V] Statistics: Getting Network Errors.\n" if $o_verbose >= 2; 
         $network = "errors.total";
       }
-      # TODO: check this!
-      # RHEV API documentation says that these values are in bytes/second but it seems as these are
-      # Mbyte/second
+      # Network traffic - reported in Bytes/second
       my $rx = $result{statistic}{"$network.rx"}{values}{value}{datum};
       my $tx = $result{statistic}{"$network.tx"}{values}{value}{datum};
       my $total = ($rx + $tx);
-      # convert to Mbit/s
-      $total = $total * 8 if $statistics eq "traffic";
+      # convert to MB/s
+      $total = $total / 1024 / 1024 if $statistics eq "traffic";
       $rethash{$key}{usage} = $total;
       $rethash{$key}{rx} = $rx;
       $rethash{$key}{tx} = $tx;
