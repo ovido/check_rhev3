@@ -62,7 +62,7 @@ Perl-Modules:
   Getopt::Long
   XML:Simple
 
-For Fedora 16 install the following packages:
+For Fedora 19 (and newer) install the following packages:
 # yum install perl-libwww-perl perl-LWP-Protocol-https perl-HTTP-Message \
               perl-XML-Simple
 
@@ -113,6 +113,7 @@ check_rhev3 -H rhevm -a admin@internal:password -R rhevh -l memory -s swap
 check_rhev3 -H rhevm -a admin@internal:password -R rhevh -l network
 check_rhev3 -H rhevm -a admin@internal:password -R rhevh -l network -s status
 check_rhev3 -H rhevm -a admin@internal:password -R rhevh -l network -s traffic
+check_rhev3 -H rhevm -a admin@internal:password -R rhevh -l network -s errors
 
 Storage
 -------
@@ -128,6 +129,7 @@ check_rhev3 -H rhevm -a admin@internal:password -M vm -l cpu
 check_rhev3 -H rhevm -a admin@internal:password -M vm -l memory
 check_rhev3 -H rhevm -a admin@internal:password -M vm -l network
 check_rhev3 -H rhevm -a admin@internal:password -M vm -l network -s traffic
+check_rhev3 -H rhevm -a admin@internal:password -M vm -l network -s errors
 
 VM Pools
 --------
@@ -139,7 +141,7 @@ Sample Icinga/Nagios definitions
 --------------------------------
 
 Detailed information can be found on the project website
-https://labs.ovido.at/monitoring/wiki/check_rhev3.
+https://github.com/ovido/check_rhev3
 
 Command
 -------
