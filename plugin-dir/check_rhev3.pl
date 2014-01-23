@@ -1531,6 +1531,8 @@ sub eval_status{
   	if ($component eq "Vms"){
    	  if ($_ eq "unassigned" || $_ eq "unknown" || $_ eq "not_responding" || $_ eq "image_illegal" || $_ eq "down"){
    	  	$tmp_state = "critical";
+   	  }elsif ($_ ne "up"){
+   	  	$tmp_state = "warning";
    	  }
    	}
     $comp_state{ $_ }++;        # datacenter, host and vm status
