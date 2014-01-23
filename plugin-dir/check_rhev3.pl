@@ -1472,6 +1472,7 @@ sub eval_status{
   my $size = $#input + 1;
   # all possible stati for datacenters, hosts and vms
   my %comp_state;
+  my $tmp_state = "ok";
   # all possible values for dcs/hosts/vms (needed for performance data)
   if ($component eq "Vms"){
     $comp_state{ 'powering_up' } = 0;
@@ -1487,6 +1488,9 @@ sub eval_status{
     $comp_state{ 'unknown' } = 0;
     $comp_state{ 'not_responding' } = 0;
     $comp_state{ 'image_illegal' } = 0;
+    $comp_state{ 'image_locked' } = 0;
+    $comp_state{ 'paused' } = 0;
+    $comp_state{ 'suspended' } = 0;
   }elsif ($component eq "Datacenters"){
   	$comp_state{ 'uninitialized' } = 0;
   	$comp_state{ 'problematic' } = 0;
@@ -1524,6 +1528,11 @@ sub eval_status{
         next;
       }
     }
+  	if ($component eq "Vms"){
+   	  if ($_ eq "unassigned" || $_ eq "unknown" || $_ eq "not_responding" || $_ eq "image_illegal" || $_ eq "down"){
+   	  	$tmp_state = "critical";
+   	  }
+   	}
     $comp_state{ $_ }++;        # datacenter, host and vm status
   }
   print "[V] Eval Status: $comp_state{ 'up' }/$size $component OK\n" if $o_verbose >= 2;
@@ -1558,9 +1567,9 @@ sub eval_status{
     $info .= "]";
   }
   
-  if ( ( ($comp_state{ 'up' } == $size) && ($size != 0) ) || ( ($comp_state{ 'up' } > $o_warn) && ($comp_state{ 'up' } > $o_crit) ) ){
+  if ( ( ($comp_state{ 'up' } == $size) && ($size != 0) && $tmp_state eq "ok" ) || ( ($comp_state{ 'up' } > $o_warn) && ($comp_state{ 'up' } > $o_crit) && $tmp_state eq "ok" ) ){
     exit_plugin('ok',$component,"$comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
-  }elsif ($comp_state{ 'up' } > $o_crit){
+  }elsif ($tmp_state ne "critical" && $comp_state{ 'up' } > $o_crit){
     exit_plugin('warning',$component,"$comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
   }else{
     exit_plugin('critical',$component,"$comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
