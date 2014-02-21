@@ -1,10 +1,10 @@
-I'm happy to announce version 1.3 of check_rhev3.
+I'm happy to announce version 1.4 of check_rhev3.
 
 check_rhev3 is a monitoring plugin for Icinga/Nagios and it's forks, which is 
 used to monitor datacenters, clusters, hosts, vms, vm pools and storage domains 
 of Red Hat Enterprise Virtualization (RHEV) and oVirt virtualization environments.
 
-Download this plugin from: https://github.com/ovido/check_rhev3/releases/check_rhev3-1.3
+Download this plugin from: https://github.com/ovido/check_rhev3/releases/check_rhev3-1.4
   
 For further information on how to install this plugin visit:
   https://github.com/ovido/check_rhev3/wiki/Installation-Documentation
@@ -15,18 +15,21 @@ https://github.com/ovido/check_rhev3/wiki/Usage-Documentation
 
 Changelog:
 - New features:
--   Cookie based authentication as default auth method (Issue #1)
--   Use fixed values for warning and critical values of storage domans (Issue #3)
--   Network interface error monitoring (Issue #4)
--   Improved status messages for NICs, storage (Issue #7)
+-   Get status of vms on a specific host (Issue #8)
+-   Proxy/No Proxy environment variable support (Issue #12)
+-   Removed RHEV password from debug output and added plugin version number (Issue #13)
+-   Default port changed to 443 (Issue #15)
+-   Improved source code formatting (Issue #16)
+-   Default warning and critical thresholds for CPU load based on number of cores (Issue #17)
+-   More detailed status information for datacenters, hosts, vms and storagedomains (Issue #18)
+-   PNP4Nagios templates for datacenter, hosts, vms and storagedomains stati (Issue #21)
 
 - Bugs fixed:
--    Improved filter regex for NICs (Issue #2)
--    Optimized error messages (Issue #6)
--    Memory usage fix (Issue #10)
+-   Interface traffic in Mbytes/s instead of Bytes/s (Issue #14)
+-   Memory usage of vms in hypervisor set to 0 if negative (Issue #22)
 
 
 If you have any questions or ideas, please drop me an email: ​
-r.koch@ovido.at.
+rkoch@linuxland.at.
 
 Thank you for using check_rhev3.

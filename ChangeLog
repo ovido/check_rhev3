@@ -4,7 +4,7 @@
 #                                                         #
 #*********************************************************#
 
-* 1.4 - 
+* 1.4 - Fri Feb 28 2014
 - New features:
 -   Get status of vms on a specific host (Issue #8)
 -   Proxy/No Proxy environment variable support (Issue #12)
@@ -13,8 +13,10 @@
 -   Improved source code formatting (Issue #16)
 -   Default warning and critical thresholds for CPU load based on number of cores (Issue #17)
 -   More detailed status information for datacenters, hosts, vms and storagedomains (Issue #18)
+-   PNP4Nagios templates for datacenter, hosts, vms and storagedomains stati (Issue #21)
 - Bugs fixed:
 -   Interface traffic in Mbytes/s instead of Bytes/s (Issue #14)
+-   Memory usage of vms in hypervisor set to 0 if negative (Issue #22)
 
 * 1.3 - Tue Nov 07 2013
 - New features:
