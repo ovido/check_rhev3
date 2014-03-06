@@ -173,8 +173,9 @@ sub parse_options(){
       $_ =~ s/\s+//g;
       chomp $_;
       if ($_ =~ /^username=/){
-        my @tmp = split(/=/, $_);
-        my @tmp_auth = split(/@/, $tmp[1]);
+        $rhevm_user = $_;
+        $rhevm_user =~  s/username=//;
+        my @tmp_auth = split(/@/, $rhevm_user);
         if (! $tmp_auth[0]){
           print "RHEV Username is missing.\n";
           print_help();
@@ -182,14 +183,13 @@ sub parse_options(){
           print "RHEV Domain ins missing.\n";
           print_help();
         }
-        $rhevm_user = $tmp[1];
       }elsif ($_ =~ /^password=/){
-        my @tmp = split(/=/, $_);
-        if (! $tmp[1]){
+        $rhevm_pwd = $_;
+        $rhevm_pwd =~ s/password=//;
+        if (! $rhevm_pwd){
           print "RHEV Password is missing.\n";
           print_help();
         }
-        $rhevm_pwd = $tmp[1];
       }
     }
     close (AUTHFILE);
