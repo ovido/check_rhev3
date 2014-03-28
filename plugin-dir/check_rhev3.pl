@@ -1473,6 +1473,7 @@ sub eval_status{
   # all possible stati for datacenters, hosts and vms
   my %comp_state;
   my $tmp_state = "ok";
+  $comp_state{ 'up' } = 0;
   # all possible values for dcs/hosts/vms (needed for performance data)
   if ($component eq "Vms"){
     $comp_state{ 'powering_up' } = 0;
