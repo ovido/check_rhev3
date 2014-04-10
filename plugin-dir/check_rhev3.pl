@@ -1683,6 +1683,8 @@ sub rest_api_connect{
   my $cookie = $_[2];
   
   my $re = $ra->request($rr);
+  print "[V] REST-API: " . $re->headers_as_string if $o_verbose >= 2;
+  print "[D] rest_api_connect: " . $re->content if $o_verbose >= 3;
   if (! $re->is_success){   
     print "RHEV $status{'unknown'}: Failed to connect to RHEVM-API or received invalid response.\n"; 
     if (-f $cookie){
@@ -1691,8 +1693,6 @@ sub rest_api_connect{
     }
     exit $ERRORS{'UNKNOWN'};    
   }
-  print "[V] REST-API: " . $re->headers_as_string if $o_verbose >= 2;
-  print "[D] rest_api_connect: " . $re->content if $o_verbose >= 3;
 
   # write cookie into file
   # Set-Cookie is only available when connecting with username and password
