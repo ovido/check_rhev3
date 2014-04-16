@@ -7,7 +7,7 @@
 #                                                     #
 #  Version: 1.4.0                                     #
 #  Created: 2012-08-13                                #
-#  Last Update: 2014-01-13                            #
+#  Last Update: 2014-04-16                            #
 #  License: GPL - http://www.gnu.org/licenses         #
 #  Copyright: (c)2012,2013 ovido gmbh                 #
 #             (c)2014 Rene Koch                       #
@@ -1191,9 +1191,10 @@ sub get_stats {
       }else{
         my $mem_installed = $result{statistic}{"memory.installed"}{values}{value}{datum};
         my $mem_used      = $result{statistic}{"memory.used"}{values}{value}{datum};
-        # fix issue with negative memory usage
+        # Memory is the amount of memory used on the hypervisor, not the amount of memory used in the guest
+        # If this value is below 0, set it to 0 (negative value is a bug in oVirt/RHEV-API)
         if ($mem_used < 0){
-          $mem_used = $mem_installed + $mem_used;
+          $mem_used = 0;
         }
         $memory_usage  = sprintf("%.2f", $mem_used / $mem_installed * 100);
       }
@@ -1546,7 +1547,7 @@ sub eval_status{
   print "[V] Eval Status: critical value: $o_crit.\n" if $o_verbose >= 2;
   my $perf = undef;
   if ($perfdata == 1){ 
-    $perf = "|up=$comp_state{ 'up' };$o_warn;$o_crit;0; ";
+    $perf = "|" . $component . "_up=$comp_state{ 'up' };$o_warn;$o_crit;0; ";
     foreach my $comp_status (keys %comp_state){
       next if $comp_status eq "up";
       $perf .= "$comp_status=$comp_state{ $comp_status };;;0; ";
