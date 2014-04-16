@@ -51,7 +51,7 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Fri Feb 28 2014 Rene Koch <rkoch@linuxland.at> 1.4-1
+* Wed Apr 16 2014 Rene Koch <rkoch@linuxland.at> 1.4-1
 - Initial build
 
 * Thu Nov 07 2013 Rene Koch <r.koch@ovido.at> 1.3-1

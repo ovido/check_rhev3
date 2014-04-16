@@ -14,7 +14,7 @@ https://github.com/ovido/check_rhev3/wiki/Usage-Documentation
 
 
 Changelog:
-- New features:
+ New features:
 -   Get status of vms on a specific host (Issue #8)
 -   Proxy/No Proxy environment variable support (Issue #12)
 -   Removed RHEV password from debug output and added plugin version number (Issue #13)
@@ -22,11 +22,13 @@ Changelog:
 -   Improved source code formatting (Issue #16)
 -   Default warning and critical thresholds for CPU load based on number of cores (Issue #17)
 -   More detailed status information for datacenters, hosts, vms and storagedomains (Issue #18)
--   PNP4Nagios templates for datacenter, hosts, vms and storagedomains stati (Issue #21)
+-   PNP4Nagios templates for datacenter, hosts and vms stati (Issue #23)
 
 - Bugs fixed:
 -   Interface traffic in Mbytes/s instead of Bytes/s (Issue #14)
--   Memory usage of vms in hypervisor set to 0 if negative (Issue #22)
+-   Authentication fails if password contains equal sign (Issue #21)
+-   Initialization of variable in check_rhev3.pl - thanks Administratoor (Issue #22)
+-   Memory usage of vms in hypervisor set to 0 if negative (Issue #24)
 
 
 If you have any questions or ideas, please drop me an email: ​
