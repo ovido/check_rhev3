@@ -2,7 +2,8 @@
 #
 # Plugin: check_rhev3
 # Author: Rene Koch <rkoch@linuxland.at>
-# Date: 2012/08/14
+# Created: 2012/08/14
+# Last update: 2014/04/16
 #
 
 if ($NAME[1] == "cpu"){
@@ -17,7 +18,6 @@ if ($NAME[1] == "cpu"){
 
     # process hypervisor CPU stats
     $def[1] .= "DEF:var4=$RRDFILE[1]:$DS[4]:AVERAGE ";
-#    $def[1] .= "CDEF:sp1=100,var1,-,var4,- ";
     $def[1] .= "CDEF:sp2=var2 ";
     $def[1] .= "CDEF:sp3=var3 ";
     $def[1] .= "CDEF:sp4=var4 ";
@@ -34,7 +34,6 @@ if ($NAME[1] == "cpu"){
     $def[1] .= "GPRINT:sp4:LAST:\"last\: %3.4lg$UNIT[1] \" ";
     $def[1] .= "GPRINT:sp4:MAX:\"max\: %3.4lg$UNIT[1] \" ";
     $def[1] .= "GPRINT:sp4:AVERAGE:\"average\: %3.4lg$UNIT[1] \"\\n ";
-#    $def[1] .= "STACK:sp1#000000:\"Other    \"\\n ";
 
   }else{
 
@@ -58,17 +57,6 @@ if ($NAME[1] == "cpu"){
 
   }
 
-#  if ($WARN[1] != ""){
-#    $def[1] .= "HRULE:".$WARN[1]."#FFFF00:\"Warning    ".$WARN[1]."% \\n\" ";
-#  }
-#  if ($CRIT[1] != ""){
-#    $def[1] .= "HRULE:".$CRIT[1]."#FF0000:\"Critical   ".$CRIT[1]."% \\n\" ";
-#  }
-
-#  $def[1] .= "GPRINT:var1:LAST:\"last\: %3.4lg%s$UNIT[1] \" ";
-#  $def[1] .= "GPRINT:var1:MAX:\"max\: %3.4lg%s$UNIT[1] \" ";
-#  $def[1] .= "GPRINT:var1:AVERAGE:\"average\: %3.4lg%s$UNIT[1] \" ";
-
 }elseif (preg_match("/traffic/i",$NAME[1])){
 
   # proccess network traffic
@@ -77,20 +65,12 @@ if ($NAME[1] == "cpu"){
 
   foreach ($this->DS as $key=>$val){
     $ds = $val['DS'];
-#    if (preg_match("/.[0-9]/",$NAME[1])){	break;	}	# skip vlan tagged interfaces
     $def[1] .= "DEF:var$key=$RRDFILE[$ds]:$ds:AVERAGE ";
     $def[1] .= "LINE1:var$key#" . color() . ":\"" . substr($LABEL[$ds],8) ."      \" ";
     $def[1] .= "GPRINT:var$key:LAST:\"last\: %3.4lgMbit/s \" ";
     $def[1] .= "GPRINT:var$key:MAX:\"max\: %3.4lgMbit/s \" ";
     $def[1] .= "GPRINT:var$key:AVERAGE:\"average\: %3.4lgMbit/s \"\\n ";
   }
-
-#  if ($WARN[1] != ""){
-#    $def[1] .= "HRULE:".$WARN[1]."#FFFF00:\"Warning   ".$WARN[1]." \\n\" ";
-#  }
-#  if ($CRIT[1] != ""){
-#    $def[1] .= "HRULE:".$CRIT[1]."#FF0000:\"Critical   ".$CRIT[1]." \\n\" ";
-#  }
 
 
 }else{
@@ -152,13 +132,6 @@ if ($NAME[1] == "cpu"){
     $def[1] .= "GPRINT:var1:AVERAGE:\"average\: %3.4lg$UNIT[1] \"\\n ";
 
   }
-
-#  if ($WARN[1] != ""){
-#    $def[1] .= "HRULE:".$WARN[1]."#FFFF00:\"Warning   ".$WARN[1]." \\n\" ";
-#  }
-#  if ($CRIT[1] != ""){
-#    $def[1] .= "HRULE:".$CRIT[1]."#FF0000:\"Critical   ".$CRIT[1]." \\n\" ";
-#  }
 
 }
 
