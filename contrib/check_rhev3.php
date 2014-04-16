@@ -66,10 +66,11 @@ if ($NAME[1] == "cpu"){
   foreach ($this->DS as $key=>$val){
     $ds = $val['DS'];
     $def[1] .= "DEF:var$key=$RRDFILE[$ds]:$ds:AVERAGE ";
-    $def[1] .= "LINE1:var$key#" . color() . ":\"" . substr($LABEL[$ds],8) ."      \" ";
-    $def[1] .= "GPRINT:var$key:LAST:\"last\: %3.4lgMbit/s \" ";
-    $def[1] .= "GPRINT:var$key:MAX:\"max\: %3.4lgMbit/s \" ";
-    $def[1] .= "GPRINT:var$key:AVERAGE:\"average\: %3.4lgMbit/s \"\\n ";
+    $def[1] .= "CDEF:traffic$key=var$key,8,* ";
+    $def[1] .= "LINE1:traffic$key#" . color() . ":\"" . substr($LABEL[$ds],8) ."      \" ";
+    $def[1] .= "GPRINT:traffic$key:LAST:\"last\: %3.4lgMbit/s \" ";
+    $def[1] .= "GPRINT:traffic$key:MAX:\"max\: %3.4lgMbit/s \" ";
+    $def[1] .= "GPRINT:traffic$key:AVERAGE:\"average\: %3.4lgMbit/s \"\\n ";
   }
 
 }elseif (preg_match("/_up/i", $NAME[1])){
