@@ -72,6 +72,21 @@ if ($NAME[1] == "cpu"){
     $def[1] .= "GPRINT:var$key:AVERAGE:\"average\: %3.4lgMbit/s \"\\n ";
   }
 
+}elseif (preg_match("/_up/i", $NAME[1])){
+	
+  # process service status
+  $opt[1] = "--vertical-label \"" . str_replace('_up', '', $NAME[1]) . " status\" --slope-mode -N";
+  $def[1] = "";
+  
+  foreach ($this->DS as $key=>$val){
+  	$components = array("Datacenters_", "Clusters_", "Hosts_", "Vms_", "Storagedomains_");
+  	$ds = $val['DS'];
+  	$def[1] .= "DEF:var$key=$RRDFILE[$ds]:$ds:AVERAGE ";
+  	$def[1] .= "LINE1:var$key#" . color() . ":\"" . str_replace($components, '', $LABEL[$ds]) . "     \" ";
+  	$def[1] .= "GPRINT:var$key:LAST:\"last\: %3.4lg \" ";
+  	$def[1] .= "GPRINT:var$key:MAX:\"max\: %3.4lg \" ";
+  	$def[1] .= "GPRINT:var$key:AVERAGE:\"average\: %3.4lg \"\\n ";
+  }
 
 }else{
 
