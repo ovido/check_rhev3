@@ -31,6 +31,12 @@ Changelog:
 -   Memory usage of vms in hypervisor set to 0 if negative (Issue #24)
 
 
+Please note!
+- Default port of API has change to 443. If you're using a different port please update your Nagios command definition to use your port (add option -p).
+- Performance data for datacenter, host, vm and storagedomain status now provide more detailed information and therefor use a new format. Please convert or remove your old PNP4Nagios RRD databases in order to be able to use the new feature.
+- Network traffic calculation is fixed, so please remove your old PNP4Nagios RRD databases for the network graphs.
+
+
 If you have any questions or ideas, please drop me an email: ​
 rkoch@linuxland.at.
 
