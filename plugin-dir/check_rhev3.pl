@@ -5,9 +5,9 @@
 #                                                     #
 #  Name:    check_rhev3                               #
 #                                                     #
-#  Version: 1.4.0                                     #
+#  Version: 1.5.0                                     #
 #  Created: 2012-08-13                                #
-#  Last Update: 2014-04-16                            #
+#  Last Update: 2014-05-02                            #
 #  License: GPL - http://www.gnu.org/licenses         #
 #  Copyright: (c)2012,2013 ovido gmbh                 #
 #             (c)2014 Rene Koch                       #
@@ -55,7 +55,7 @@ my $perfdata   = 1;
 
 # Variables
 my $prog       = "check_rhev3";
-my $version    = "1.4.0";
+my $version    = "1.5.0";
 my $projecturl = "https://github.com/ovido/check_rhev3";
 my $cookie     = "/var/tmp";   # default path to cookie file
 
@@ -1054,7 +1054,11 @@ sub check_statistics{
 
       # storage domains don't provide correct values when not attached
       if ($rethash{$key}{usage} == -1){
-        $status = "critical";
+      	if ($statistics eq "cpu"){
+      	  $status = "unknown";
+      	}else{
+          $status = "critical";
+      	}
         $rethash{$key}{usage} = "?";
         print "[V] Statistics: Status: $status.\n" if $o_verbose >= 2;
       }else{
@@ -1157,6 +1161,8 @@ sub get_stats {
         my $cpu_system = $result{statistic}{"cpu.current.system"}{values}{value}{datum};
         my $cpu_user   = $result{statistic}{"cpu.current.user"}{values}{value}{datum};
            $cpu_usage  = 100 - $cpu_idle;
+           # if host is in maintenance mode or down, REST-API reports 0 values
+           $cpu_usage = -1 if $cpu_idle == 0 && $cpu_system == 0 && $cpu_user == 0;
         $rethash{$key}{stats}{"cpu.current.idle"} = $cpu_idle;
         $rethash{$key}{stats}{"cpu.current.system"} = $cpu_system;
         $rethash{$key}{stats}{"cpu.current.user"} = $cpu_user;
