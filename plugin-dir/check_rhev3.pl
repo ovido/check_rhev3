@@ -7,11 +7,11 @@
 #                                                     #
 #  Version: 1.5.0                                     #
 #  Created: 2012-08-13                                #
-#  Last Update: 2014-05-02                            #
+#  Last Update: 2014-06-02                            #
 #  License: GPL - http://www.gnu.org/licenses         #
 #  Copyright: (c)2012,2013 ovido gmbh                 #
 #             (c)2014 Rene Koch                       #
-#  Author:  Rene Koch <rkoch@linuxland.at>            #
+#  Author:  Rene Koch <r.koch@rk-it.at>               #
 #  URL: https://github.com/ovido/check_rhev3          #
 #                                                     #
 #######################################################
@@ -955,7 +955,8 @@ sub check_statistics{
       # check cpu, load and memory
       my $iret = get_stats($component,$id{ $key },$subcheck,$statistics,$key);
       my %temp = %{ $iret };
-      $rethash{$key} = $temp{$key};
+#      $rethash{$key} = $temp{$key};
+      %rethash = %temp;
       print "[D] check_statistics: \%rethash: " if $o_verbose == 3; print Dumper(%rethash) if $o_verbose == 3;
     }
   }
@@ -1235,34 +1236,39 @@ sub get_stats {
       print "[V] Statistics: Errors on $key: $total.\n" if $o_verbose >= 2 && $statistics eq "errors";
     }elsif ($statistics eq "storage"){
       print "[V] Statistics: Getting Storage Usage.\n" if $o_verbose >= 2;
-      my ($storage_available,$storage_used) = undef;
+      my %storage_domain;
       # storage attached to datacenter has different path to direct checked storagedomains
       if (! $result{id}){ 
         if (! $result{$value}{id}){
           # loop through storage domains
           foreach my $storage (keys %{ $result{ $value } }){
-            $storage_available  = $result{$value}{$storage}{available}  if defined $result{$value}{$storage}{available};
-            $storage_used       = $result{$value}{$storage}{used}       if defined $result{$value}{$storage}{used};
+          	# multiple storage domains attached to a data center
+            $storage_domain{ $storage }{ 'available' }  = $result{$value}{$storage}{available}  if defined $result{$value}{$storage}{available};
+            $storage_domain{ $storage }{ 'used' }       = $result{$value}{$storage}{used}       if defined $result{$value}{$storage}{used};
           }
         }else{
-          $storage_available  = $result{$value}{available}  if defined $result{$value}{available};
-          $storage_used       = $result{$value}{used}       if defined $result{$value}{used};
+          $storage_domain{ $key }{ 'available' }  = $result{$value}{available}  if defined $result{$value}{available};
+          $storage_domain{ $key }{ 'used' }       = $result{$value}{used}       if defined $result{$value}{used};
         }
       }else{
-        $storage_available = $result{available} if defined $result{available};
-        $storage_used      = $result{used}      if defined $result{used};
+      	# storage domain checks
+        $storage_domain{ $key }{ 'available' } = $result{available} if defined $result{available};
+        $storage_domain{ $key }{ 'used' }      = $result{used}      if defined $result{used};
       }
-      my $storage_usage     = sprintf("%.2f", $storage_used / ($storage_used + $storage_available) * 100) if defined $storage_available;
-         $storage_usage     = -1 if ! defined $storage_available;
-      $rethash{$key}{usage} = $storage_usage;
-      $rethash{$key}{usageBytes} = $storage_used;
-      # set default values for warning and critical
-      $o_warn = 60 unless defined $o_warn;
-      $o_crit = 80 unless defined $o_crit;
-      # also return warning and critical values in % to avoid breaking existing pnp graphs
-      $rethash{$key}{warnPercent} = sprintf("%.2f", $o_warn / ($storage_used + $storage_available) *100) if $o_warn > 100;
-      $rethash{$key}{critPercent} = sprintf("%.2f", $o_crit / ($storage_used + $storage_available) *100) if $o_crit > 100;
-      print "[V] Statistics: Storage Usage of $key: $storage_usage.\n" if $o_verbose >= 2;
+      # loop through storage domains
+      foreach my $storage (keys %storage_domain){
+           $storage_domain{ $storage }{ 'usage' }     = sprintf("%.2f", $storage_domain{ $storage }{ 'used' } / ($storage_domain{ $storage }{ 'used' } + $storage_domain{ $storage }{ 'available' }) * 100) if defined $storage_domain{ $storage }{ 'available' };
+           $storage_domain{ $storage }{ 'usage' }     = -1 if ! defined $storage_domain{ $storage }{ 'available' };
+        $rethash{ $storage }{ 'usage' } = $storage_domain{ $storage }{ 'usage' };
+        $rethash{ $storage }{ 'usageBytes' } = $storage_domain{ $storage }{ 'used' };
+        # set default values for warning and critical
+        $o_warn = 60 unless defined $o_warn;
+        $o_crit = 80 unless defined $o_crit;
+        # also return warning and critical values in % to avoid breaking existing pnp graphs
+        $rethash{ $storage }{ 'warnPercent' } = sprintf("%.2f", $o_warn / ($storage_domain{ $storage }{ 'used' } + $storage_domain{ $storage }{ 'available' }) *100) if $o_warn > 100;
+        $rethash{ $storage }{ 'critPercent' } = sprintf("%.2f", $o_crit / ($storage_domain{ $storage }{ 'used' } + $storage_domain{ $storage }{ 'available' }) *100) if $o_crit > 100;
+        print "[V] Statistics: Storage Usage of $storage: $storage_domain{ $storage }{ 'usage' }.\n" if $o_verbose >= 2;
+      }
     }
   }
   return \%rethash;
