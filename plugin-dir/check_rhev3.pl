@@ -401,6 +401,7 @@ sub check_dc{
       if (defined $o_subcheck){
         check_istatus("data_centers",$o_rhev_dc,"storagedomains") if $o_subcheck eq "status";
         check_statistics("data_centers",$o_rhev_dc,"dcstorage")  if $o_subcheck eq "usage";
+        check_statistics("data_centers",$o_rhev_dc,"ovstorage")  if $o_subcheck eq "overall-usage";
         print_unknown("storage domain");
       }else{    check_istatus("data_centers",$o_rhev_dc,"storagedomains");  }
     }else{  
@@ -909,6 +910,7 @@ sub check_statistics{
      $subcheck = "nics" if $statistics eq "errors";
      $subcheck = ""     if $statistics eq "storage";
      $subcheck = "storagedomains" if $statistics eq "dcstorage";
+     $subcheck = "storagedomains" if $statistics eq "ovstorage";
      $statistics = "storage" if $statistics eq "dcstorage"; # we can use "normal" storage domain behavior now
   print "[D] check_statistics: Looping through \%id.\n" if $o_verbose == 3;
   foreach my $key (keys %id){
@@ -1234,7 +1236,7 @@ sub get_stats {
       $rethash{$key}{tx} = $tx;
       print "[V] Statistics: Traffic Usage of $key: $total.\n" if $o_verbose >= 2 && $statistics eq "traffic";
       print "[V] Statistics: Errors on $key: $total.\n" if $o_verbose >= 2 && $statistics eq "errors";
-    }elsif ($statistics eq "storage"){
+    }elsif ($statistics eq "storage" || $statistics eq "ovstorage"){
       print "[V] Statistics: Getting Storage Usage.\n" if $o_verbose >= 2;
       my %storage_domain;
       # storage attached to datacenter has different path to direct checked storagedomains
@@ -1243,8 +1245,17 @@ sub get_stats {
           # loop through storage domains
           foreach my $storage (keys %{ $result{ $value } }){
           	# multiple storage domains attached to a data center
-            $storage_domain{ $storage }{ 'available' }  = $result{$value}{$storage}{available}  if defined $result{$value}{$storage}{available};
-            $storage_domain{ $storage }{ 'used' }       = $result{$value}{$storage}{used}       if defined $result{$value}{$storage}{used};
+          	if ($statistics eq "ovstorage"){
+          	  # overall usage of all storage domains
+          	  # skip iso and export domains
+          	  next if $result{$value}{$storage}{type} ne "data";
+          	  $storage_domain{ $key }{ 'available' }	+= $result{$value}{$storage}{available}	if defined $result{$value}{$storage}{available};
+          	  $storage_domain{ $key }{ 'used' }			+= $result{$value}{$storage}{used}		if defined $result{$value}{$storage}{used};
+          	}else{
+          	  # usage of all storage domains
+              $storage_domain{ $storage }{ 'available' }  = $result{$value}{$storage}{available}  if defined $result{$value}{$storage}{available};
+              $storage_domain{ $storage }{ 'used' }       = $result{$value}{$storage}{used}       if defined $result{$value}{$storage}{used};
+          	}
           }
         }else{
           $storage_domain{ $key }{ 'available' }  = $result{$value}{available}  if defined $result{$value}{available};
