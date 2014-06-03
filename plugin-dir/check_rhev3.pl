@@ -283,7 +283,7 @@ sub print_usage(){
 sub print_help(){
   print "\nRed Hat Enterprise Virtualization checks for Icinga/Nagios version $version\n";
   print "GPL license, (c)2012-2013   - ovido gmbh <r.koch\@ovido.at>\n";
-  print "             (c)2014        - Rene Koch <rkoch\@linuxland.at>\n\n";
+  print "             (c)2014        - Rene Koch <rkoch\@rk-it.at>\n\n";
   print_usage();
   print <<EOT;
 
@@ -339,9 +339,9 @@ Options:
     Show details for command-line debugging
     (Icinga/Nagios may truncate output)
 
-Send email to rkoch\@linuxland.at if you have questions regarding use
+Send email to rkoch\@rk-it.at if you have questions regarding use
 of this software. To submit patches of suggest improvements, send
-email to rkoch\@linuxland.at
+email to rkoch\@rk-it.at
 EOT
 
   exit $ERRORS{$status{'unknown'}};
@@ -1553,13 +1553,19 @@ sub eval_status{
         next;
       }
     }
-  	if ($component eq "Vms"){
-   	  if ($_ eq "unassigned" || $_ eq "unknown" || $_ eq "not_responding" || $_ eq "image_illegal" || $_ eq "down"){
-   	  	$tmp_state = "critical";
-   	  }elsif ($_ ne "up"){
-   	  	$tmp_state = "warning";
-   	  }
-   	}
+    if ($component eq "Vms"){
+      if ($_ eq "unassigned" || $_ eq "unknown" || $_ eq "not_responding" || $_ eq "image_illegal" || $_ eq "down"){
+     	$tmp_state = "critical";
+      }elsif ($_ ne "up"){
+     	$tmp_state = "warning" if $tmp_state ne "critical";
+      }
+    }elsif ($component eq "Hosts"){
+      if ($_ eq "error" || $_ eq "install_failed" || $_ eq "non_responsive" || $_ eq "unassigned" || $_ eq "down"){
+        $tmp_state = "critical";
+      }elsif ($_ ne "up"){
+        $tmp_state = "warning" if $tmp_state ne "critical";
+      }
+    }
     $comp_state{ $_ }++;        # datacenter, host and vm status
   }
   print "[V] Eval Status: $comp_state{ 'up' }/$size $component OK\n" if $o_verbose >= 2;
