@@ -903,6 +903,7 @@ sub check_statistics{
   
   my $status = "unknown";
   my $output = undef;
+  my $cpu_cores = 1;
 
   my %rethash;
   my $subcheck = "statistics"; 
@@ -944,6 +945,8 @@ sub check_statistics{
       }
     }else{
       # get warning and critical values for load based on physical CPU cores
+      # CPU usage for virtual machines can be > 100%, so we need the number of cores/sockets
+      # see https://access.redhat.com/site/solutions/337013
       if ((! defined $o_warn || ! defined $o_crit) && $statistics eq "cpu.load.avg.5m"){
       	my $lref  = get_result("/$url/$id{ $key }","cpu","topology");
         my %cputop = %{ $lref };
@@ -952,6 +955,11 @@ sub check_statistics{
         # critical = #cores * 2
         $o_warn = $cputop{ 'sockets' } * $cputop{ 'cores' } unless defined $o_warn;
         $o_crit = $cputop{ 'sockets' } * $cputop{ 'cores' } * 2 unless defined $o_crit;
+      }elsif ($statistics eq "cpu" && $component eq "vms"){
+      	my $lref  = get_result("/$url/$id{ $key }","cpu","topology");
+        my %cputop = %{ $lref };
+        print "[D] check_statistics: \%cputop: " if $o_verbose == 3; print Dumper(%cputop) if $o_verbose == 3;
+        $cpu_cores = $cputop{ 'sockets' } * $cputop{ 'cores' };
       }
     	
       # check cpu, load and memory
@@ -1024,6 +1032,10 @@ sub check_statistics{
       $output .= "($key) ";
     }else{
       # go through memory, load and cpu hash
+      # get real CPU usage based on CPU cores (https://access.redhat.com/site/solutions/337013)
+      if ($component eq "vms" && $statistics eq "cpu"){
+      	$rethash{$key}{usage} = $rethash{$key}{usage} / $cpu_cores;
+      }
       my $uom = "";
          $uom = '%' unless $statistics eq "cpu.load.avg.5m";
       my $used = "";
