@@ -3,7 +3,7 @@
 # Plugin: check_rhev3
 # Author: Rene Koch <rkoch@linuxland.at>
 # Created: 2012/08/14
-# Last update: 2014/04/16
+# Last update: 2014/06/08
 #
 
 if ($NAME[1] == "cpu"){
@@ -84,6 +84,21 @@ if ($NAME[1] == "cpu"){
   	$ds = $val['DS'];
   	$def[1] .= "DEF:var$key=$RRDFILE[$ds]:$ds:AVERAGE ";
   	$def[1] .= "LINE1:var$key#" . color() . ":\"" . str_replace($components, '', $LABEL[$ds]) . "     \" ";
+  	$def[1] .= "GPRINT:var$key:LAST:\"last\: %3.4lg \" ";
+  	$def[1] .= "GPRINT:var$key:MAX:\"max\: %3.4lg \" ";
+  	$def[1] .= "GPRINT:var$key:AVERAGE:\"average\: %3.4lg \"\\n ";
+  }
+
+}elseif (preg_match("/storage_/i", $NAME[1])){
+
+  # process storage domain usage
+  $opt[1] = "--vertical-label \"" . "Storage usage\" --slope-mode -N";
+  $def[1] = "";
+
+  foreach ($this->DS as $key=>$val){
+  	$ds = $val['DS'];
+  	$def[1] .= "DEF:var$key=$RRDFILE[$ds]:$ds:AVERAGE ";
+  	$def[1] .= "LINE1:var$key#" . color() . ":\"" . str_replace('storage_', '', $LABEL[$ds]) . "     \" ";
   	$def[1] .= "GPRINT:var$key:LAST:\"last\: %3.4lg \" ";
   	$def[1] .= "GPRINT:var$key:MAX:\"max\: %3.4lg \" ";
   	$def[1] .= "GPRINT:var$key:AVERAGE:\"average\: %3.4lg \"\\n ";
