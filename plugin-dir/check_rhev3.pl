@@ -1668,7 +1668,7 @@ sub rhev_connect{
   my $rr = HTTP::Request->new(GET => $rhevm_url);
 
   # cookie authentication or basic auth
-  my $cf = `echo "$o_rhevm_host-$rhevm_user" | base64`;
+  my $cf = `echo "$o_rhevm_host-$rhevm_user" | base64 -w0`;
   chomp $cf;
   print "[V] REST-API: cookie filename: $cf\n" if $o_verbose >= 2;
   print "[D] rhev_connect: Trying cookie authentication.\n" if $o_verbose == 3;
