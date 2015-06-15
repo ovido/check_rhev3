@@ -1177,7 +1177,7 @@ sub get_stats {
         my $cpu_user   = $result{statistic}{"cpu.current.user"}{values}{value}{datum};
            $cpu_usage  = 100 - $cpu_idle;
            # if host is in maintenance mode or down, REST-API reports 0 values
-           $cpu_usage = -1 if $cpu_idle == 0 && $cpu_system == 0 && $cpu_user == 0;
+           $cpu_usage = 0 if $cpu_idle == 0 && $cpu_system == 0 && $cpu_user == 0;
         $rethash{$key}{stats}{"cpu.current.idle"} = $cpu_idle;
         $rethash{$key}{stats}{"cpu.current.system"} = $cpu_system;
         $rethash{$key}{stats}{"cpu.current.user"} = $cpu_user;
