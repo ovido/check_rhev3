@@ -1612,7 +1612,11 @@ sub eval_status{
     $info .= "]";
   }
   
-  if ( ( ($comp_state{ 'up' } == $size) && ($size != 0) && $tmp_state eq "ok" ) || ( ($comp_state{ 'up' } > $o_warn) && ($comp_state{ 'up' } > $o_crit) && $tmp_state eq "ok" ) ){
+  if ($o_crit > $comp_state{ 'up' } && $tmp_state eq "ok"){
+    exit_plugin('unknown',$component,"critical threshold is larger than numbers of cluster nodes - $comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info< critical threshold $o_crit" . $perf);
+  }elsif ($o_warn > $comp_state{ 'up' } && $tmp_state eq "ok"){
+    exit_plugin('unknown',$component,"warning threshold is larger than numbers of cluster nodes - $comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info< warning threshold $o_warn" . $perf);
+  }elsif ( ( ($comp_state{ 'up' } == $size) && ($size != 0) && $tmp_state eq "ok" ) || ( ($comp_state{ 'up' } > $o_warn) && ($comp_state{ 'up' } > $o_crit) && $tmp_state eq "ok" ) ){
     exit_plugin('ok',$component,"$comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
   }elsif ($tmp_state ne "critical" && $comp_state{ 'up' } > $o_crit){
     exit_plugin('warning',$component,"$comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
