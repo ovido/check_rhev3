@@ -1,9 +1,9 @@
 <?php
 #
 # Plugin: check_rhev3
-# Author: Rene Koch <rkoch@linuxland.at>
+# Author: Rene Koch <rkoch@rk-it.at>
 # Created: 2012/08/14
-# Last update: 2014/06/08
+# Last update: 2015/02/07
 #
 
 if ($NAME[1] == "cpu"){
@@ -39,7 +39,7 @@ if ($NAME[1] == "cpu"){
 
     # process VM CPU stats
     $def[1] .= "CDEF:sp1=100,var1,- ";
-    $def[1] .= "CDEF:sp2=var2 ";
+    $def[1] .= "CDEF:sp2=var1 ";
     $def[1] .= "CDEF:sp3=var3 ";
 
     $def[1] .= "AREA:sp2#000080:\"Guest      \" ";
