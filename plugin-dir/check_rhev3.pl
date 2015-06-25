@@ -7,10 +7,10 @@
 #                                                     #
 #  Version: 1.5.0                                     #
 #  Created: 2012-08-13                                #
-#  Last Update: 2014-06-02                            #
+#  Last Update: 2015-06-24                            #
 #  License: GPL - http://www.gnu.org/licenses         #
 #  Copyright: (c)2012,2013 ovido gmbh                 #
-#             (c)2014 Rene Koch                       #
+#             (c)2014,2015 Rene Koch                  #
 #  Author:  Rene Koch <r.koch@rk-it.at>               #
 #  URL: https://github.com/ovido/check_rhev3          #
 #                                                     #
