@@ -15,12 +15,13 @@ vms, vm pools and storage domains.
 Contributions / Help
 ====================
 
-Send email to rkoch@linuxland.at if you have questions regarding use
+Send email to rkoch@rk-it.at if you have questions regarding use
 of this software. Please include the following information in your email:
 * OS type and version
 * Perl version
 
-To submit patches or suggest improvements, send email to rkoch@linuxland.at.
+To submit patches or suggest improvements, send email to rkoch@rk-it.at or create
+a pull request on Github. Thanks.
 
 
 Installation
