@@ -705,7 +705,7 @@ sub check_status {
     if (! $result{$component}{id} ){
       # multiple results
       print "[V] Status: Multiple hash entries found.\n" if $o_verbose >= 2;
-      my @return;
+      my %return;
       print "[D] check_status: Looping through second hash level.\n" if $o_verbose == 3;
       foreach my $value (keys %{ $result{$key} }){
         if (defined $id){
@@ -715,20 +715,21 @@ sub check_status {
           print "[D] check_status: Variable \$sub: $sub.\n" if $o_verbose == 3;
           if ($components eq "networks") { 
             print "[V] Status: Value of $value: $result{$key}{$value}{status}{state}.\n" if $o_verbose >= 2;
-            push @return, $result{$key}{$value}{status}{state}; next; 
+            $return{$value} = $result{$key}{$value}{status}{state};
+	    next; 
           }
           next unless defined $result{$key}{$value}{$sub}{id};
           print "[V] Status: $sub-Value of $value: $result{$key}{$value}{status}{state}.\n" if $o_verbose >= 2;
-          push @return, $result{$key}{$value}{status}{state} if $result{$key}{$value}{$sub}{id} eq $id;
+          $return{$value} = $result{$key}{$value}{status}{state} if $result{$key}{$value}{$sub}{id} eq $id;
         }else{
           print "[V] Status: Value of $value: $result{$key}{$value}{status}{state}.\n" if $o_verbose >= 2;
-          push @return, $result{$key}{$value}{status}{state};
+          $return{$value} = $result{$key}{$value}{status}{state};
         }
       }
-      return \@return;
+      return \%return;
 
     }else{
-      my @return;
+      my %return;
       # single result
       print "[V] Status: single hash entry found.\n" if $o_verbose >= 2;
       if (defined $id){
@@ -736,13 +737,13 @@ sub check_status {
            $sub = "vmpool" if $searchid eq "vmpool";
         print "[D] check_status: Variable \$sub: $sub.\n" if $o_verbose == 3;
         if ($components eq "networks") { 
-          push @return, $result{$component}{status}{state}; 
+          $return{$result{$component}{'name'}} = $result{$component}{status}{state}; 
           print "[V] Status: Result: $result{$component}{status}{state}.\n" if $o_verbose >= 2;
         }else { 
           next unless defined $result{$component}{$sub}{id};
           print "[V] Status: Result: $result{$component}{status}{state}.\n" if $o_verbose >= 2;
           print "[V] Status: $sub-ID: $result{$component}{$sub}{id}.\n" if $o_verbose >= 2;
-          push @return, $result{$component}{status}{state} if $result{$component}{$sub}{id} eq $id;
+          $return{$result{$component}{'name'}} = $result{$component}{status}{state} if $result{$component}{$sub}{id} eq $id;
         }
       }else{
         print "[D] check_status: Converting variable \$components.\n" if $o_verbose == 3;
@@ -753,9 +754,9 @@ sub check_status {
           print_notfound(ucfirst($components), $search);
         }
         print "[V] Status: Result: $result{$component}{status}{state}\n" if $o_verbose >= 2;
-        push @return, $result{$component}{status}{state};
+        $return{$result{$component}{'name'}} = $result{$component}{status}{state};
       }
-      return \@return;
+      return \%return;
     }
   }
   $components = "Cluster" if $components eq "clustervms" || $components eq "clusterhosts";
@@ -1498,89 +1499,92 @@ sub write_errors_file{
 sub eval_status{
   print "[D] eval_status: Called function eval_status.\n" if $o_verbose == 3;
   my $component = $_[0];
-  my @input = @{ $_[1] };
+  my %input = %{ $_[1] };
   print "[D] eval_status: Input parameter \$component: $component\n" if $o_verbose == 3;
-  print "[D] eval_status: Input parameter \@input: @input\n" if $o_verbose == 3;
+  print "[D] eval_status: Input parameter \%input: %input\n" if $o_verbose == 3;
   # rewrite component name
   $component = "Vms" if $component eq "Hostvms";
   $component = "Vms" if $component eq "Clustervms";
   $component = "Hosts" if $component eq "Clusterhosts";
-  my $size = $#input + 1;
+  my $size = keys %input;
   # all possible stati for datacenters, hosts and vms
   my %comp_state;
   my $tmp_state = "ok";
-  $comp_state{ 'up' } = 0;
+  $comp_state{ 'up' }{ 'value' } = 0;
   # all possible values for dcs/hosts/vms (needed for performance data)
   if ($component eq "Vms"){
-    $comp_state{ 'powering_up' } = 0;
-    $comp_state{ 'powering_down' } = 0;
-    $comp_state{ 'migrating_from' } = 0;
-    $comp_state{ 'migrating_to' } = 0;
-    $comp_state{ 'wait_for_launch' } = 0;
-    $comp_state{ 'reboot_in_progress' } = 0;
-    $comp_state{ 'saving_state' } = 0;
-    $comp_state{ 'restoring_state' } = 0;
-    $comp_state{ 'powering_down' } = 0;
-    $comp_state{ 'unassigned' } = 0;
-    $comp_state{ 'unknown' } = 0;
-    $comp_state{ 'not_responding' } = 0;
-    $comp_state{ 'image_illegal' } = 0;
-    $comp_state{ 'image_locked' } = 0;
-    $comp_state{ 'paused' } = 0;
-    $comp_state{ 'suspended' } = 0;
+    $comp_state{ 'powering_up' }{ 'value' } = 0;
+    $comp_state{ 'powering_down' }{ 'value' } = 0;
+    $comp_state{ 'migrating_from' }{ 'value' } = 0;
+    $comp_state{ 'migrating_to' }{ 'value' } = 0;
+    $comp_state{ 'wait_for_launch' }{ 'value' } = 0;
+    $comp_state{ 'reboot_in_progress' }{ 'value' } = 0;
+    $comp_state{ 'saving_state' }{ 'value' } = 0;
+    $comp_state{ 'restoring_state' }{ 'value' } = 0;
+    $comp_state{ 'powering_down' }{ 'value' } = 0;
+    $comp_state{ 'unassigned' }{ 'value' } = 0;
+    $comp_state{ 'unknown' }{ 'value' } = 0;
+    $comp_state{ 'not_responding' }{ 'value' } = 0;
+    $comp_state{ 'image_illegal' }{ 'value' } = 0;
+    $comp_state{ 'image_locked' }{ 'value' } = 0;
+    $comp_state{ 'paused' }{ 'value' } = 0;
+    $comp_state{ 'suspended' }{ 'value' } = 0;
   }elsif ($component eq "Datacenters"){
-  	$comp_state{ 'uninitialized' } = 0;
-  	$comp_state{ 'problematic' } = 0;
-  	$comp_state{ 'contend' } = 0;
+  	$comp_state{ 'uninitialized' }{ 'value' } = 0;
+  	$comp_state{ 'problematic' }{ 'value' } = 0;
+  	$comp_state{ 'contend' }{ 'value' } = 0;
   }elsif ($component eq "Hosts"){
-    $comp_state{ 'error' } = 0;
-    $comp_state{ 'initializing' } = 0;
-    $comp_state{ 'installing' } = 0;
-    $comp_state{ 'install_failed' } = 0;
-    $comp_state{ 'non_responsive' } = 0;
-    $comp_state{ 'pending_approval' } = 0;
-    $comp_state{ 'preparing_for_maintenance' } = 0;
-    $comp_state{ 'connecting' } = 0;
-    $comp_state{ 'reboot' } = 0;
-    $comp_state{ 'unassigned' } = 0;
+    $comp_state{ 'error' }{ 'value' } = 0;
+    $comp_state{ 'initializing' }{ 'value' } = 0;
+    $comp_state{ 'installing' }{ 'value' } = 0;
+    $comp_state{ 'install_failed' }{ 'value' } = 0;
+    $comp_state{ 'non_responsive' }{ 'value' } = 0;
+    $comp_state{ 'pending_approval' }{ 'value' } = 0;
+    $comp_state{ 'preparing_for_maintenance' }{ 'value' } = 0;
+    $comp_state{ 'connecting' }{ 'value' } = 0;
+    $comp_state{ 'reboot' }{ 'value' } = 0;
+    $comp_state{ 'unassigned' }{ 'value' } = 0;
   }
   # values used by hosts and vms
   if ($component eq "Vms" || $component eq "Hosts"){
-    $comp_state{ 'down' } = 0;
+    $comp_state{ 'down' }{ 'value' } = 0;
   }
   # values used by datacenters and hosts
   if ($component eq "Datacenters" || $component eq "Hosts"){
-  	$comp_state{ 'maintenance' } = 0;
-  	$comp_state{ 'not_operational' } = 0;
+  	$comp_state{ 'maintenance' }{ 'value' } = 0;
+  	$comp_state{ 'not_operational' }{ 'value' } = 0;
   }
 
-  foreach (@input){
-    print "[V] Eval Status: Status of $component: $_.\n" if $o_verbose >= 2;
+  foreach my $comp_name (keys %input){
+    print "[V] Eval Status: Status of $component: $input{$comp_name}.\n" if $o_verbose >= 2;
     if ($component eq "Storagedomains"){
-      if (! $_){
-        $comp_state{ 'up' }++;            # storage domain status - status ok if not available under /storagedomains - strange isn't it? ;)
+      if (! $input{$comp_name}){
+        $comp_state{ 'up' }{ 'value' }++;            # storage domain status - status ok if not available under /storagedomains - strange isn't it? ;)
+	$comp_state{ 'up' }{ 'name' } .= "$comp_name, ";
         next;
       }else{
-        $comp_state{ $_ }++;
+        $comp_state{ $input{$comp_name} }{ 'value' }++;
+	$comp_state{ $input{$comp_name} }{ 'name' } .= "$comp_name, ";
         next;
       }
     }
     if ($component eq "Vms"){
-      if ($_ eq "unassigned" || $_ eq "unknown" || $_ eq "not_responding" || $_ eq "image_illegal" || $_ eq "down"){
+      if ($input{$comp_name} eq "unassigned" || $input{$comp_name} eq "unknown" || $input{$comp_name} eq "not_responding" || $input{$comp_name} eq "image_illegal" || $input{$comp_name} eq "down"){
      	$tmp_state = "critical";
-      }elsif ($_ ne "up"){
+      }elsif ($input{$comp_name} ne "up"){
      	$tmp_state = "warning" if $tmp_state ne "critical";
       }
     }elsif ($component eq "Hosts"){
-      if ($_ eq "error" || $_ eq "install_failed" || $_ eq "non_responsive" || $_ eq "unassigned" || $_ eq "down"){
+      if ($input{$comp_name} eq "error" || $input{$comp_name} eq "install_failed" || $input{$comp_name} eq "non_responsive" || $input{$comp_name} eq "unassigned" || $input{$comp_name} eq "down"){
         $tmp_state = "critical";
-      }elsif ($_ ne "up"){
+      }elsif ($input{$comp_name} ne "up"){
         $tmp_state = "warning" if $tmp_state ne "critical";
       }
     }
-    $comp_state{ $_ }++;        # datacenter, host and vm status
+    $comp_state{ $input{$comp_name} }{ 'value' }++;        # datacenter, host and vm status
+    $comp_state{ $input{$comp_name} }{ 'name' } .= "$comp_name, ";
   }
-  print "[V] Eval Status: $comp_state{ 'up' }/$size $component OK\n" if $o_verbose >= 2;
+  print "[V] Eval Status: $comp_state{ 'up' }{ 'value' }/$size $component OK\n" if $o_verbose >= 2;
   my $state = "UP";
   $o_warn = $size unless defined $o_warn;
   $o_crit = $size unless defined $o_crit;
@@ -1588,10 +1592,10 @@ sub eval_status{
   print "[V] Eval Status: critical value: $o_crit.\n" if $o_verbose >= 2;
   my $perf = undef;
   if ($perfdata == 1){ 
-    $perf = "|" . $component . "_up=$comp_state{ 'up' };$o_warn;$o_crit;0; ";
+    $perf = "|" . $component . "_up=$comp_state{ 'up' }{ 'value' };$o_warn;$o_crit;0; ";
     foreach my $comp_status (keys %comp_state){
       next if $comp_status eq "up";
-      $perf .= "$comp_status=$comp_state{ $comp_status };;;0; ";
+      $perf .= "$comp_status=$comp_state{ $comp_status }{ 'value' };;;0; ";
     }
     print "[V] Eval Status: Performance data: $perf.\n" if $o_verbose >= 2;
   }else{ 
@@ -1604,24 +1608,31 @@ sub eval_status{
   	$info = "[Details: ";
     foreach my $comp_status (keys %comp_state){
       # skip 0 values
-      next if $comp_state{ $comp_status } == 0;
-      $info .= "$comp_state{ $comp_status } $comp_status, ";
+      next if $comp_state{ $comp_status }{ 'value' } == 0;
+      if (defined $comp_state{ $comp_status }{ 'name' }){
+        $info .= "$comp_state{ $comp_status }{ 'value' } $comp_status: $comp_state{ $comp_status }{ 'name' }";
+      }else{
+        $info .= "$comp_state{ $comp_status }{ 'value' } $comp_status  ";
+      }
+      chop $info;
+      chop $info;
+      $info .= "; ";
     }
     chop $info;
     chop $info;
     $info .= "]";
   }
   
-  if ($o_crit > $comp_state{ 'up' } && $tmp_state eq "ok"){
-    exit_plugin('unknown',$component,"critical threshold is larger than numbers of cluster nodes - $comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info< critical threshold $o_crit" . $perf);
-  }elsif ($o_warn > $comp_state{ 'up' } && $tmp_state eq "ok"){
-    exit_plugin('unknown',$component,"warning threshold is larger than numbers of cluster nodes - $comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info< warning threshold $o_warn" . $perf);
-  }elsif ( ( ($comp_state{ 'up' } == $size) && ($size != 0) && $tmp_state eq "ok" ) || ( ($comp_state{ 'up' } > $o_warn) && ($comp_state{ 'up' } > $o_crit) && $tmp_state eq "ok" ) ){
-    exit_plugin('ok',$component,"$comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
-  }elsif ($tmp_state ne "critical" && $comp_state{ 'up' } > $o_crit){
-    exit_plugin('warning',$component,"$comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
+  if ($o_crit > $comp_state{ 'up' }{ 'value' } && $tmp_state eq "ok"){
+    exit_plugin('unknown',$component,"critical threshold is larger than numbers of cluster nodes - $comp_state{ 'up' }{ 'value' }/$size " . ucfirst($component) . " with state $state $info< critical threshold $o_crit" . $perf);
+  }elsif ($o_warn > $comp_state{ 'up' }{ 'value' } && $tmp_state eq "ok"){
+    exit_plugin('unknown',$component,"warning threshold is larger than numbers of cluster nodes - $comp_state{ 'up' }{ 'value' }/$size " . ucfirst($component) . " with state $state $info< warning threshold $o_warn" . $perf);
+  }elsif ( ( ($comp_state{ 'up' }{ 'value' } == $size) && ($size != 0) && $tmp_state eq "ok" ) || ( ($comp_state{ 'up' }{ 'value' } > $o_warn) && ($comp_state{ 'up' }{ 'value' } > $o_crit) && $tmp_state eq "ok" ) ){
+    exit_plugin('ok',$component,"$comp_state{ 'up' }{ 'value' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
+  }elsif ($tmp_state ne "critical" && $comp_state{ 'up' }{ 'value' } > $o_crit){
+    exit_plugin('warning',$component,"$comp_state{ 'up' }{ 'value' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
   }else{
-    exit_plugin('critical',$component,"$comp_state{ 'up' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
+    exit_plugin('critical',$component,"$comp_state{ 'up' }{ 'value' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
   }
 }
 
