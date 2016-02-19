@@ -15,13 +15,13 @@
 
 
 AC_PREREQ([2.63])
-AC_INIT([check_rhev3], [1.4], [rkoch@linuxland.at])
+AC_INIT([check_rhev3], [1.5], [rkoch@rk-it.at])
 AM_INIT_AUTOMAKE
 
 AC_PREFIX_DEFAULT(/usr/local/nagios/libexec)
 PKG_NAME="check_rhev3"
-PKG_VERSION="1.4"
-PKG_REL_DATE="2014-04-16"
+PKG_VERSION="1.5"
+PKG_REL_DATE="2016-02-19"
 
 # Figure out how to invoke "install" and what install options to use
 AC_PROG_INSTALL

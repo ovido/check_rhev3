@@ -1,10 +1,10 @@
-I'm happy to announce version 1.4 of check_rhev3.
+I'm happy to announce version 1.5 of check_rhev3.
 
 check_rhev3 is a monitoring plugin for Icinga/Nagios and it's forks, which is 
 used to monitor datacenters, clusters, hosts, vms, vm pools and storage domains 
 of Red Hat Enterprise Virtualization (RHEV) and oVirt virtualization environments.
 
-Download this plugin from: https://github.com/ovido/check_rhev3/releases/check_rhev3-1.4
+Download this plugin from: https://github.com/ovido/check_rhev3/releases/check_rhev3-1.5
   
 For further information on how to install this plugin visit:
   https://github.com/ovido/check_rhev3/wiki/Installation-Documentation
@@ -14,30 +14,23 @@ https://github.com/ovido/check_rhev3/wiki/Usage-Documentation
 
 
 Changelog:
- New features:
--   Get status of vms on a specific host (Issue #8)
--   Proxy/No Proxy environment variable support (Issue #12)
--   Removed RHEV password from debug output and added plugin version number (Issue #13)
--   Default port changed to 443 (Issue #15)
--   Improved source code formatting (Issue #16)
--   Default warning and critical thresholds for CPU load based on number of cores (Issue #17)
--   More detailed status information for datacenters, hosts, vms and storagedomains (Issue #18)
--   PNP4Nagios templates for datacenter, hosts and vms stati (Issue #23)
 
-- Bugs fixed:
--   Interface traffic in Mbytes/s instead of Bytes/s (Issue #14)
--   Authentication fails if password contains equal sign (Issue #21)
--   Initialization of variable in check_rhev3.pl - thanks Administratoor (Issue #22)
--   Memory usage of vms in hypervisor set to 0 if negative (Issue #24)
+- New features:
+-   Set cluster to warning if host is in maintenance mode instead of critical (Issue #27)
+-   New storage domain check: -s overall-usage (Issue #28)
+-   Display more detailed information of host and vm status (Issue #35)
+
+Bugs fixed:
+-   Wrong CPU Usage on hypervisor maintenance (Issue #26)
+-   Discrepancy in DataCenter Storage usage Output. (Issue #28) 
+-   Wrong CPU value for vms (Issue #29)
+-   VM CPU usage graphs show values over 100% (Issue #33)
+-   Unsuccessful stat on filename containing newline (Issue #36)
+-   align behaviour for check_statistics cpu to memory (Issue #39)
 
 
-Please note!
-- Default port of API has change to 443. If you're using a different port please update your Nagios command definition to use your port (add option -p).
-- Performance data for datacenter, host, vm and storagedomain status now provide more detailed information and therefor use a new format. Please convert or remove your old PNP4Nagios RRD databases in order to be able to use the new feature.
-- Network traffic calculation is fixed, so please remove your old PNP4Nagios RRD databases for the network graphs.
 
-
-If you have any questions or ideas, please drop me an email: ​
-rkoch@linuxland.at.
+If you have any questions or ideas, please drop me an email:
+rkoch@rk-it.at.
 
 Thank you for using check_rhev3.

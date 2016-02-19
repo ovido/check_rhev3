@@ -4,6 +4,19 @@
 #                                                         #
 #*********************************************************#
 
+* 1.5 - Fri Feb 19 2016
+- New features:
+-   Set cluster to warning if host is in maintenance mode instead of critical (Issue #27)
+-   New storage domain check: -s overall-usage (Issue #28)
+-   Display more detailed information of host and vm status (Issue #35)
+Bugs fixed:
+-   Wrong CPU Usage on hypervisor maintenance (Issue #26)
+-   Discrepancy in DataCenter Storage usage Output. (Issue #28) 
+-   Wrong CPU value for vms (Issue #29)
+-   VM CPU usage graphs show values over 100% (Issue #33)
+-   Unsuccessful stat on filename containing newline (Issue #36)
+-   align behaviour for check_statistics cpu to memory (Issue #39)
+
 * 1.4 - Wed Apr 16 2014
 - New features:
 -   Get status of vms on a specific host (Issue #8)
