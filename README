@@ -89,6 +89,7 @@ check_rhev3 -H rhevm -a admin@internal:password -D default -l version
 check_rhev3 -H rhevm -a admin@internal:password -D default -l storage
 check_rhev3 -H rhevm -a admin@internal:password -D default -l storage -s status
 check_rhev3 -H rhevm -a admin@internal:password -D default -l storage -s usage
+check_rhev3 -H rhevm -a admin@internal:password -D default -l storage -s overall-usage
 
 Cluster
 -------
