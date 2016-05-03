@@ -1682,6 +1682,9 @@ sub rhev_connect{
 
   my $rr = HTTP::Request->new(GET => $rhevm_url);
 
+  # explicitly use version 3 of the API
+  $rr->header('Version' => '3');
+
   # cookie authentication or basic auth
   my $cf = `echo "$o_rhevm_host-$rhevm_user" | base64 -w0`;
   chomp $cf;
