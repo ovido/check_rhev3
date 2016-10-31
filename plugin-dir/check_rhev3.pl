@@ -80,6 +80,7 @@ my $o_rhev_vm      = undef;   # rhev vm
 my $o_rhev_vmpool  = undef;   # rhev vm pool
 my $o_check        = undef;
 my $o_subcheck     = undef;
+my $o_ignore_xml_warn = undef;
 my @o_nics;
 
 my %status  = ( ok => "OK", warning => "WARNING", critical => "CRITICAL", unknown => "UNKNOWN");
@@ -115,6 +116,7 @@ sub parse_options(){
     'w:s'   => \$o_warn,        'warning:s'  => \$o_warn,
     'c:s'   => \$o_crit,        'critical:s' => \$o_crit,
                                 'ca-file:s'  => \$o_ca_file,
+                                'ignore-xml-warn'  => \$o_ignore_xml_warn,
     'o'     => \$o_cookie,      'cookie'     => \$o_cookie,
     'n:s'   => \@o_nics,        'nics:s'     => \@o_nics
   );
@@ -335,6 +337,8 @@ Options:
     Value to result in warning status
  -c, --critical=DOUBLE
     Value to result in critical status
+ --ignore-xml-warn
+    Ignores XML Warnings
  -v, --verbose
     Show details for command-line debugging
     (Icinga/Nagios may truncate output)
@@ -1714,8 +1718,12 @@ sub rhev_connect{
     $rr->authorization_basic($rhevm_user,$rhevm_pwd);
     $re = rest_api_connect($rr, $ra, $cookie . "/" . $cf);
   }
-
-  my $result = eval { XMLin($re->content) };
+  my $result; 
+  if (defined( $o_ignore_xml_warn )){
+    $result = eval { local $SIG{__WARN__} = sub {}; XMLin($re->content) };
+  } else {
+    $result = eval { XMLin($re->content) };
+  }
   print "RHEV $status{'critical'}: Error in XML returned from RHEVM - enable debug mode for details.\n" if $@;
   return $result;
 
