@@ -1549,6 +1549,8 @@ sub eval_status{
     $comp_state{ 'reboot' }{ 'value' } = 0;
     $comp_state{ 'unassigned' }{ 'value' } = 0;
   }
+  # number of non-critical states
+  $comp_state{ 'non_critical' }{ 'value' } = 0;
   # values used by hosts and vms
   if ($component eq "Vms" || $component eq "Hosts"){
     $comp_state{ 'down' }{ 'value' } = 0;
@@ -1577,12 +1579,21 @@ sub eval_status{
      	$tmp_state = "critical";
       }elsif ($input{$comp_name} ne "up"){
      	$tmp_state = "warning" if $tmp_state ne "critical";
+     	$comp_state{ 'non_critical' }{ 'value' }++;
       }
     }elsif ($component eq "Hosts"){
       if ($input{$comp_name} eq "error" || $input{$comp_name} eq "install_failed" || $input{$comp_name} eq "non_responsive" || $input{$comp_name} eq "unassigned" || $input{$comp_name} eq "down"){
         $tmp_state = "critical";
       }elsif ($input{$comp_name} ne "up"){
         $tmp_state = "warning" if $tmp_state ne "critical";
+        $comp_state{ 'non_critical' }{ 'value' }++;
+      }
+    }elsif ($component eq "Datacenters"){
+      if ($input{$comp_name} eq "uninitialized" || $input{$comp_name} eq "problematic" || $input{$comp_name} eq "contend" || $input{$comp_name} eq "not_operational"){
+        $tmp_state = "critical";
+      }elsif ($input{$comp_name} ne "up"){
+        $tmp_state = "warning" if $tmp_state ne "critical";
+        $comp_state{ 'non_critical' }{ 'value' }++;
       }
     }
     $comp_state{ $input{$comp_name} }{ 'value' }++;        # datacenter, host and vm status
@@ -1637,17 +1648,7 @@ sub eval_status{
       exit_plugin('critical',$component,"$comp_state{ 'up' }{ 'value' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
     }
   }else{
-    if ($o_crit > $comp_state{ 'up' }{ 'value' } && $tmp_state eq "ok"){
-      exit_plugin('unknown',$component,"critical threshold is larger than numbers of cluster nodes - $comp_state{ 'up' }{ 'value' }/$size " . ucfirst($component) . " with state $state $info< critical threshold $o_crit" . $perf);
-    }elsif ($o_warn > $comp_state{ 'up' }{ 'value' } && $tmp_state eq "ok"){
-      exit_plugin('unknown',$component,"warning threshold is larger than numbers of cluster nodes - $comp_state{ 'up' }{ 'value' }/$size " . ucfirst($component) . " with state $state $info< warning threshold $o_warn" . $perf);
-    }elsif ( ( ($comp_state{ 'up' }{ 'value' } == $size) && ($size != 0) && $tmp_state eq "ok" ) || ( ($comp_state{ 'up' }{ 'value' } > $o_warn) && ($comp_state{ 'up' }{ 'value' } > $o_crit) && $tmp_state eq "ok" ) ){
-      exit_plugin('ok',$component,"$comp_state{ 'up' }{ 'value' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
-    }elsif ($tmp_state ne "critical" && $comp_state{ 'up' }{ 'value' } > $o_crit){
-      exit_plugin('warning',$component,"$comp_state{ 'up' }{ 'value' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
-    }else{
-      exit_plugin('critical',$component,"$comp_state{ 'up' }{ 'value' }/$size " . ucfirst($component) . " with state $state $info" . $perf);
-    }
+    exit_plugin($tmp_state,$component,"$comp_state{ 'up' }{ 'value' }/$size " . ucfirst($component) . " with state $state $info,$comp_state{ 'non_critical' }{ 'value' } " . ucfirst($component) . " in non-critical state" . $perf);
   }
 }
 
