@@ -24,6 +24,11 @@ Bugs fixed:
 -   Critical/Warning thresholds for -l vms/hosts are ignored (#44)
 
 
+Please note that API path changed in RHEV 4 and oVirt 4.
+It's /ovirt-engine/api instead of /api. This plugin will still use the old path for compatibility
+reasons with older installations. If you use RHEV 4 or oVirt 4 please use option -A:
+./check_rhev3 -A "/ovirt-engine/api" ...
+
 
 If you have any questions or ideas, please drop me an email:
 rkoch@rk-it.at.
