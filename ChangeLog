@@ -4,6 +4,14 @@
 #                                                         #
 #*********************************************************#
 
+* 1.6 - Sun Nov 06 2016
+- New features:
+-   Add support for oVirt 4 and RHEV 4 (#42)
+-   Add option to ignore xml warnings (#49)
+-   Components in state maintenance result in warning state now instead of critical
+- Bugs fixed:
+-   Critical/Warning thresholds for -l vms/hosts are ignored (#44)
+
 * 1.5 - Fri Feb 19 2016
 - New features:
 -   Set cluster to warning if host is in maintenance mode instead of critical (Issue #27)
