@@ -1,10 +1,10 @@
-I'm happy to announce version 1.5 of check_rhev3.
+I'm happy to announce version 1.6 of check_rhev3.
 
 check_rhev3 is a monitoring plugin for Icinga/Nagios and it's forks, which is 
 used to monitor datacenters, clusters, hosts, vms, vm pools and storage domains 
 of Red Hat Enterprise Virtualization (RHEV) and oVirt virtualization environments.
 
-Download this plugin from: https://github.com/ovido/check_rhev3/releases/check_rhev3-1.5
+Download this plugin from: https://github.com/ovido/check_rhev3/releases/check_rhev3-1.6
   
 For further information on how to install this plugin visit:
   https://github.com/ovido/check_rhev3/wiki/Installation-Documentation
@@ -16,18 +16,18 @@ https://github.com/ovido/check_rhev3/wiki/Usage-Documentation
 Changelog:
 
 - New features:
--   Set cluster to warning if host is in maintenance mode instead of critical (Issue #27)
--   New storage domain check: -s overall-usage (Issue #28)
--   Display more detailed information of host and vm status (Issue #35)
+-   Add support for oVirt 4 and RHEV 4 (#42)
+-   Add option to ignore xml warnings (#49)
+-   Components in state maintenance result in warning state now instead of critical
 
 Bugs fixed:
--   Wrong CPU Usage on hypervisor maintenance (Issue #26)
--   Discrepancy in DataCenter Storage usage Output. (Issue #28) 
--   Wrong CPU value for vms (Issue #29)
--   VM CPU usage graphs show values over 100% (Issue #33)
--   Unsuccessful stat on filename containing newline (Issue #36)
--   align behaviour for check_statistics cpu to memory (Issue #39)
+-   Critical/Warning thresholds for -l vms/hosts are ignored (#44)
 
+
+Please note that API path changed in RHEV 4 and oVirt 4.
+It's /ovirt-engine/api instead of /api. This plugin will still use the old path for compatibility
+reasons with older installations. If you use RHEV 4 or oVirt 4 please use option -A:
+./check_rhev3 -A "/ovirt-engine/api" ...
 
 
 If you have any questions or ideas, please drop me an email:
