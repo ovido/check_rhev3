@@ -970,8 +970,16 @@ sub check_statistics{
       # check cpu, load and memory
       my $iret = get_stats($component,$id{ $key },$subcheck,$statistics,$key);
       my %temp = %{ $iret };
-#      $rethash{$key} = $temp{$key};
-      %rethash = %temp;
+      # check if key matches
+      # this is required as key is name of storagedomain when checking storagedomain usage, but key
+      # is name of datacenter and not name of storagedomain when checking datacenter storage usage
+      foreach my $tmpkey (keys %temp){
+        if ($key eq $tmpkey){
+          $rethash{$key} = $temp{$key};
+        }else{
+          %rethash = %temp;
+        }
+      }
       print "[D] check_statistics: \%rethash: " if $o_verbose == 3; print Dumper(%rethash) if $o_verbose == 3;
     }
   }
@@ -1048,7 +1056,7 @@ sub check_statistics{
       if ($perfdata == 1){
         my $tmp = $statistics;
            $tmp .= "_" . $key if $statistics eq "storage";
-           $perf .= "$tmp=$rethash{$key}{usage}$uom;";
+           $perf .= "$tmp=$rethash{$key}{usage}$uom;" if defined $rethash{$key}{'usage'};
         # always use warning and critical values in percentage for storagedomains to
         # avoid breaking existing pnp graphs
         if (defined $rethash{$key}{warnPercent}){
@@ -1073,6 +1081,7 @@ sub check_statistics{
       }
 
       # storage domains don't provide correct values when not attached
+      next unless defined $rethash{$key}{usage};
       if ($rethash{$key}{usage} == -1){
       	if ($statistics eq "cpu"){
       	  $status = "unknown";
