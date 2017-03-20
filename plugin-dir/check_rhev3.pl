@@ -607,13 +607,13 @@ sub check_vmpool_usage{
   print "[D] check_vmpool_usage: Looping through \%id\n" if $o_verbose == 3;
   foreach my $key (keys %id){
     my $rref = check_status("vms","",$id{ $key },"vmpool");
-    my @result = @{$rref};
-    print "[D] check_vmpool_usage: \@result: " if $o_verbose == 3; print @result . "\n" if $o_verbose == 3;
-    print "[D] check_vmpool_usage: Looping through \@result.\n" if $o_verbose == 3;
+    my %result = %{$rref};
+    print "[D] check_vmpool_usage: \%result: " if $o_verbose == 3; print %result . "\n" if $o_verbose == 3;
+    print "[D] check_vmpool_usage: Looping through \%result.\n" if $o_verbose == 3;
     # count vms and vms with status up belonging to this pool
-    foreach (@result){
+    foreach my $vm (keys %result){
       $size++;
-      $ok++ if $_ eq "up";      # host and vm status
+      $ok++ if $result{$vm} eq "up";      # host and vm status
     }
     print "[V] Usage: VM Pool $key: Value of \$ok: $ok, \$size: $size " if $o_verbose >= 2;
   }
